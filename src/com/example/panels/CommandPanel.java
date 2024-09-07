@@ -1,13 +1,26 @@
+package panels;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+
+enum Room {
+    bed, bath, living, kit
+}
+
+enum Furniture {
+    closet, lamp, bed, door, sofa, tc
+}
 
 public class CommandPanel {
     // Main method to create the command panel
@@ -18,15 +31,14 @@ public class CommandPanel {
 
         commandPanel.add(createTabBar());
         commandPanel.add(createTitle("Rooms"));
-        commandPanel.add(createButton("Bedroom"));
-        commandPanel.add(createButton("Bathroom"));
-        commandPanel.add(createButton("Living Room"));
-        commandPanel.add(createButton("Kitchen"));
+        commandPanel.add(createButton("Bedroom", Room.bed));
+        commandPanel.add(createButton("Bathroom", Room.bath));
+        commandPanel.add(createButton("Living Room", Room.living));
+        commandPanel.add(createButton("Kitchen", Room.kit));
         commandPanel.add(createTitle("Furniture"));
-        commandPanel.add(createButton("Door"));
-        commandPanel.add(createButton("Sofa"));
-        commandPanel.add(createButton("Table & Chairs"));
-
+        commandPanel.add(createButton("Door", Furniture.door));
+        commandPanel.add(createButton("Sofa", Furniture.sofa));
+        commandPanel.add(createButton("Table & Chairs", Furniture.tc));
 
         return commandPanel;
     }
@@ -41,7 +53,7 @@ public class CommandPanel {
         return titleLabel;
     }
 
-    public JButton createButton(String text) {
+    public <T> JButton createButton(String text, T fixture) {
         JButton button = new JButton(text);
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
         button.setPreferredSize(new Dimension(150, 30));
@@ -50,15 +62,29 @@ public class CommandPanel {
         button.setBackground(Color.WHITE);
         button.setForeground(Color.DARK_GRAY);
         button.setFocusPainted(false);
+
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showConfirmDialog(
+                        null,
+                        "You selected " + text,
+                        "Confirm Exit",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE,
+                        null);
+            }
+        });
+
         return button;
     }
 
-    public Component createTabBar(){
+    public Component createTabBar() {
         JPanel tabBar = new JPanel();
         tabBar.setLayout(new BoxLayout(tabBar, BoxLayout.X_AXIS));
         tabBar.setBackground(Color.LIGHT_GRAY);
-        tabBar.add(createButton("Insert"));
-        tabBar.add(createButton("Properties"));
+        tabBar.add(createButton("Insert", null));
+        tabBar.add(createButton("Properties", null));
         return tabBar;
     }
 }

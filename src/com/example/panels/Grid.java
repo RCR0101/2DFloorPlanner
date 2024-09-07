@@ -1,19 +1,14 @@
-import javax.swing.JComponent;
+package panels;
+
 import java.awt.Color;
 import java.awt.Graphics;
-
-class Canvas extends JComponent {
-
-    @Override
-    protected void paintComponent(Graphics g) {
-    }
-}
+import canvas.Canvas;
 
 public class Grid extends Canvas {
     private int gridSize;
 
     public Grid(int gridSize) {
-        this.gridSize = gridSize;  // Set the size of the grid cells
+        this.gridSize = gridSize;
     }
 
     @Override
@@ -24,7 +19,7 @@ public class Grid extends Canvas {
         for (int i = 0; i < getWidth(); i += gridSize) {
             g.drawLine(i, 0, i, getHeight());
         }
-        for (int j = 0; j < getHeight()*2; j += gridSize) {
+        for (int j = 0; j < getHeight() * 2; j += gridSize) {
             g.drawLine(0, j, getWidth(), j);
         }
     }
