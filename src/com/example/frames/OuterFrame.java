@@ -10,22 +10,21 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import panels.CommandPanel;
-import panels.Grid;
+import canvas.Canvas;
 
 public class OuterFrame implements WindowListener {
 
     public static void main(String[] args) {
-        CommandPanel cmdPanel = new CommandPanel();
+        Canvas canvas = new Canvas(40);
+        CommandPanel cmdPanel = new CommandPanel(canvas);
         JFrame frame = new JFrame("2D Floor Planner");
-        Grid drawSpace = new Grid(40);
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         frame.setResizable(false);
-        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE); // Use DO_NOTHING_ON_CLOSE to handle closing
-                                                                    // manually
+        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         frame.setLayout(new BorderLayout());
-        frame.add(drawSpace, BorderLayout.CENTER);
+        frame.add(canvas, BorderLayout.CENTER);
         frame.add(cmdPanel.createCommandPanel(), BorderLayout.EAST);
-        frame.addWindowListener(new OuterFrame()); // Add the WindowListener here
+        frame.addWindowListener(new OuterFrame());
         frame.setVisible(true);
     }
 

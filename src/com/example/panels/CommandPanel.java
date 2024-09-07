@@ -10,12 +10,13 @@ import java.awt.event.ActionListener;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
+import canvas.Canvas;
+
 enum Room {
-    bed, bath, living, kit
+    bedroom, bathroom, living, kit
 }
 
 enum Furniture {
@@ -23,7 +24,12 @@ enum Furniture {
 }
 
 public class CommandPanel {
-    // Main method to create the command panel
+    private Canvas canvas;
+
+    public CommandPanel(Canvas canvas) {
+        this.canvas = canvas;
+    }
+
     public JPanel createCommandPanel() {
         JPanel commandPanel = new JPanel();
         commandPanel.setLayout(new BoxLayout(commandPanel, BoxLayout.Y_AXIS));
@@ -31,8 +37,8 @@ public class CommandPanel {
 
         commandPanel.add(createTabBar());
         commandPanel.add(createTitle("Rooms"));
-        commandPanel.add(createButton("Bedroom", Room.bed));
-        commandPanel.add(createButton("Bathroom", Room.bath));
+        commandPanel.add(createButton("Bedroom", Room.bedroom));
+        commandPanel.add(createButton("Bathroom", Room.bathroom));
         commandPanel.add(createButton("Living Room", Room.living));
         commandPanel.add(createButton("Kitchen", Room.kit));
         commandPanel.add(createTitle("Furniture"));
@@ -43,7 +49,6 @@ public class CommandPanel {
         return commandPanel;
     }
 
-    // Method to create the title label
     public JLabel createTitle(String title) {
         JLabel titleLabel = new JLabel(title, SwingConstants.CENTER);
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -66,13 +71,7 @@ public class CommandPanel {
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showConfirmDialog(
-                        null,
-                        "You selected " + text,
-                        "Confirm Exit",
-                        JOptionPane.YES_NO_OPTION,
-                        JOptionPane.QUESTION_MESSAGE,
-                        null);
+                canvas.setSelectedObject(fixture);
             }
         });
 
