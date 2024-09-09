@@ -31,7 +31,7 @@ The project is organized into several packages and files that manage different f
     │   └── OuterFrame.java   
     ├── main                  # Main application entry point
     │   └── Main.java         
-    ├── menubar               # Menu bar implementation (if any)
+    ├── menubar               # Menu bar implementation
     ├── models                # Data models for rooms and other objects
     │   └── Room.java         
     ├── panels                # UI panels for commands and other inputs
@@ -172,7 +172,6 @@ The project is organized into several packages and files that manage different f
 
 ## **7. Future Improvements**
 
-- **3D Rendering**: Upgrade the canvas to support 3D room modeling.
 - **Room Resizing**: Allow users to resize rooms dynamically.
 - **Drag and Drop**: Implement drag-and-drop functionality for rooms.
 - **Undo/Redo**: Add undo/redo functionality for better user experience.
