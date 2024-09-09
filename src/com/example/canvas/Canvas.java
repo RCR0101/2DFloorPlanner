@@ -2,7 +2,7 @@ package canvas;
 
 import javax.swing.JComponent;
 
-import models.Rectangle;
+import models.Room;
 
 import java.awt.Graphics;
 import java.awt.event.MouseAdapter;
@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.awt.Color;
 
 public class Canvas<T> extends JComponent {
-    public ArrayList<Rectangle> rectangles = new ArrayList<Rectangle>(100);
+    public ArrayList<Room> rooms = new ArrayList<Room>(100);
     T fixture = null;
     private int clickX = -1, clickY = -1;
     private int gridSize = 50;
@@ -48,8 +48,8 @@ public class Canvas<T> extends JComponent {
         }
 
         if (clickX != -1 && clickY != -1 && fixture != null) {
-            rectangles.add(new Rectangle(clickX,clickY,160,160, getColor(fixture)));
-            for (Rectangle rect : rectangles) {
+            rooms.add(new Room(clickX,clickY,160,160, getColor(fixture)));
+            for (Room rect : rooms) {
                 g.setColor(rect.color);
                 g.fillRect(rect.x, rect.y, rect.width, rect.height);
                 g.setColor(Color.BLACK);
