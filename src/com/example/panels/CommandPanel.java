@@ -1,7 +1,11 @@
+package panels;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -9,8 +13,23 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
+import canvas.Canvas;
+
+enum Room {
+    bedroom, bathroom, living, kit
+}
+
+enum Furniture {
+    closet, lamp, bed, door, sofa, tc
+}
+
 public class CommandPanel {
-    // Main method to create the command panel
+    private Canvas canvas;
+
+    public CommandPanel(Canvas canvas) {
+        this.canvas = canvas;
+    }
+
     public JPanel createCommandPanel() {
         JPanel commandPanel = new JPanel();
         commandPanel.setLayout(new BoxLayout(commandPanel, BoxLayout.Y_AXIS));
@@ -18,20 +37,18 @@ public class CommandPanel {
 
         commandPanel.add(createTabBar());
         commandPanel.add(createTitle("Rooms"));
-        commandPanel.add(createButton("Bedroom"));
-        commandPanel.add(createButton("Bathroom"));
-        commandPanel.add(createButton("Living Room"));
-        commandPanel.add(createButton("Kitchen"));
+        commandPanel.add(createButton("Bedroom", Room.bedroom));
+        commandPanel.add(createButton("Bathroom", Room.bathroom));
+        commandPanel.add(createButton("Living Room", Room.living));
+        commandPanel.add(createButton("Kitchen", Room.kit));
         commandPanel.add(createTitle("Furniture"));
-        commandPanel.add(createButton("Door"));
-        commandPanel.add(createButton("Sofa"));
-        commandPanel.add(createButton("Table & Chairs"));
-
+        commandPanel.add(createButton("Door", Furniture.door));
+        commandPanel.add(createButton("Sofa", Furniture.sofa));
+        commandPanel.add(createButton("Table & Chairs", Furniture.tc));
 
         return commandPanel;
     }
 
-    // Method to create the title label
     public JLabel createTitle(String title) {
         JLabel titleLabel = new JLabel(title, SwingConstants.CENTER);
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -41,7 +58,7 @@ public class CommandPanel {
         return titleLabel;
     }
 
-    public JButton createButton(String text) {
+    public <T> JButton createButton(String text, T fixture) {
         JButton button = new JButton(text);
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
         button.setPreferredSize(new Dimension(150, 30));
@@ -50,15 +67,23 @@ public class CommandPanel {
         button.setBackground(Color.WHITE);
         button.setForeground(Color.DARK_GRAY);
         button.setFocusPainted(false);
+
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                canvas.setSelectedObject(fixture);
+            }
+        });
+
         return button;
     }
 
-    public Component createTabBar(){
+    public Component createTabBar() {
         JPanel tabBar = new JPanel();
         tabBar.setLayout(new BoxLayout(tabBar, BoxLayout.X_AXIS));
         tabBar.setBackground(Color.LIGHT_GRAY);
-        tabBar.add(createButton("Insert"));
-        tabBar.add(createButton("Properties"));
+        tabBar.add(createButton("Insert", null));
+        tabBar.add(createButton("Properties", null));
         return tabBar;
     }
 }
