@@ -1,8 +1,9 @@
 package models;
 
 import java.awt.Color;
+import java.io.Serializable;
 
-public class Room {
+public class Room implements Serializable {
     public int x;
     public int y;
     public int width;
