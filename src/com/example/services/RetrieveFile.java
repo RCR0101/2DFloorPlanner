@@ -12,7 +12,7 @@ public class RetrieveFile {
     ArrayList<Room> roomList;
 
     public ArrayList<Room> getFile() throws IOException, ClassNotFoundException{
-        FileInputStream fileInputStream = new FileInputStream("/Users/adalmia/Documents/projects/java_dev/2DFloorPlanner/saves/saveFileTest.txt");
+        FileInputStream fileInputStream = new FileInputStream(Constants.SAVE_PATH);
         ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
         @SuppressWarnings("unchecked")
         ArrayList<Room> roomList = (ArrayList<Room>) objectInputStream.readObject();

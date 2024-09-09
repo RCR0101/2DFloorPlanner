@@ -15,7 +15,7 @@ public class SaveFile {
     }
 
     public void saveFile() throws IOException{
-        FileOutputStream fileOutputStream = new FileOutputStream("/Users/adalmia/Documents/projects/java_dev/2DFloorPlanner/saves/saveFileTest.txt");
+        FileOutputStream fileOutputStream = new FileOutputStream(Constants.SAVE_PATH);
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
         objectOutputStream.writeObject(roomList);
         objectOutputStream.close();
