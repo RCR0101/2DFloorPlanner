@@ -159,7 +159,7 @@ The project is organized into several packages and files that manage different f
 ### 6.2 **Running the Application**
 
 1. Open the project in your preferred IDE.
-2. Navigate to `Main.java` and run the application.
+2. Navigate to `OuterFrame.java` and run the application.
 3. The main window will open, displaying a grid where users can place rooms.
 
 ### 6.3 **Usage**
