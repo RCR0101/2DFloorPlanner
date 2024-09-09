@@ -11,12 +11,15 @@ import javax.swing.JOptionPane;
 
 import panels.CommandPanel;
 import canvas.Canvas;
+import menubar.CustomMenuBar;
 
 public class OuterFrame implements WindowListener {
 
     public static void main(String[] args) {
+        @SuppressWarnings("rawtypes")
         Canvas canvas = new Canvas(40);
         CommandPanel cmdPanel = new CommandPanel(canvas);
+        CustomMenuBar menuBar = new CustomMenuBar();
         JFrame frame = new JFrame("2D Floor Planner");
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         frame.setResizable(false);
@@ -24,6 +27,7 @@ public class OuterFrame implements WindowListener {
         frame.setLayout(new BorderLayout());
         frame.add(canvas, BorderLayout.CENTER);
         frame.add(cmdPanel.createCommandPanel(), BorderLayout.EAST);
+        frame.add(menuBar.createMenuBar(), BorderLayout.NORTH);
         frame.addWindowListener(new OuterFrame());
         frame.setVisible(true);
     }
