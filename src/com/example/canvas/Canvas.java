@@ -77,4 +77,8 @@ public class Canvas<T> extends JComponent {
         }
     }
 
+    public ArrayList<Room> getRoomList(){
+        return rooms;
+    }
+
 }
