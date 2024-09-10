@@ -5,7 +5,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 public class Room implements Serializable {
-    private static final long serialVersionUID = 6697947686724816858L;  // Use the serialVersionUID from the error
+    private static final long serialVersionUID = 6697947686724816858L;
 
     public int x;
     public int y;
