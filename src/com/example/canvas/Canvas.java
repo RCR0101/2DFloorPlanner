@@ -3,7 +3,7 @@ package canvas;
 import javax.swing.JComponent;
 
 import models.Room;
-import services.RetrieveFile;
+import services.LoadFile;
 
 import java.awt.Graphics;
 import java.awt.event.MouseAdapter;
@@ -19,11 +19,7 @@ public class Canvas<T> extends JComponent {
     private int gridSize = 50;
     private boolean roomsLoaded = false;
 
-    public Canvas(int gridSize) {
-        this.gridSize = gridSize;
-
-        loadRoomsFromFile();
-
+    public Canvas() {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -36,10 +32,29 @@ public class Canvas<T> extends JComponent {
         });
     }
 
-    private void loadRoomsFromFile() {
+    public Canvas(int gridSize) {
+        this.gridSize = gridSize;
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (fixture != null) {
+                    clickX = snapToGrid(e.getX());
+                    clickY = snapToGrid(e.getY());
+                    Room newRoom = new Room(clickX, clickY, 160, 160, getColor(fixture));
+                    rooms.add(newRoom);
+                    repaint();
+                }
+            }
+        });
+    }
+
+    public void loadRoomsFromFile() {
         try {
-            rooms = new RetrieveFile().getFile();
+            rooms = new LoadFile().getFile();
             roomsLoaded = true;
+            repaint();
+            System.out.println("It does come here?");
         } catch (ClassNotFoundException | IOException e) {
             e.printStackTrace();
         }
@@ -61,7 +76,7 @@ public class Canvas<T> extends JComponent {
             g.drawLine(0, j, getWidth(), j);
         }
 
-        if (roomsLoaded) {
+        if (roomsLoaded || !rooms.isEmpty()) {
             for (Room rect : rooms) {
                 g.setColor(rect.color);
                 g.fillRect(rect.x, rect.y, rect.width, rect.height);
@@ -69,10 +84,8 @@ public class Canvas<T> extends JComponent {
         }
 
         if (clickX != -1 && clickY != -1 && fixture != null) {
-            Room newRoom = new Room(clickX, clickY, 160, 160, getColor(fixture));
-            rooms.add(newRoom); // Add new room to the list
-            g.setColor(newRoom.color);
-            g.fillRect(newRoom.x, newRoom.y, newRoom.width, newRoom.height);
+            g.setColor(getColor(fixture));
+            g.fillRect(clickX, clickY, 160, 160);
             g.setColor(Color.BLACK);
             g.drawString(fixture.toString(), clickX, clickY - 10);
         }

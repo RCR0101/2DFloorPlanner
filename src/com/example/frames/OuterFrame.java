@@ -18,11 +18,12 @@ import menubar.CustomMenuBar;
 @SuppressWarnings("rawtypes")
 public class OuterFrame implements WindowListener {
     public Canvas canvas;
+    @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         OuterFrame outerFrame = new OuterFrame();
         outerFrame.canvas = new Canvas(40);;
         CommandPanel cmdPanel = new CommandPanel(outerFrame.canvas);
-        CustomMenuBar menuBar = new CustomMenuBar();
+        CustomMenuBar menuBar = new CustomMenuBar(outerFrame.canvas.getRoomList(), outerFrame.canvas);
         JFrame frame = new JFrame("2D Floor Planner");
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         frame.setResizable(false);
@@ -41,6 +42,19 @@ public class OuterFrame implements WindowListener {
                 "/Users/adalmia/Documents/projects/java_dev/2DFloorPlanner/assets/images/logo.jpg");
         Image resizedImage = logo.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
         ImageIcon resizedIcon = new ImageIcon(resizedImage);
+        SaveFile sFile = new SaveFile(canvas.getRoomList());
+        try {
+            if(!sFile.isFileSaved())
+            getResponse(resizedIcon);
+            System.exit(0);
+        } catch (ClassNotFoundException e1) {
+            e1.printStackTrace();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+    }
+
+    private void getResponse(ImageIcon resizedIcon) {
         int response = JOptionPane.showConfirmDialog(
                 null,
                 "Do you want to save unsaved changes?",
@@ -57,9 +71,7 @@ public class OuterFrame implements WindowListener {
             } catch (IOException e1) {
                 System.err.println("There was an IOException: "+e1);
             }
-            System.exit(0);
         } else if (response == JOptionPane.NO_OPTION) {
-            System.exit(0);
         }
     }
 
