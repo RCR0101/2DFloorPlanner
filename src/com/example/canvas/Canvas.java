@@ -54,7 +54,6 @@ public class Canvas<T> extends JComponent {
             rooms = new LoadFile().getFile();
             roomsLoaded = true;
             repaint();
-            System.out.println("It does come here?");
         } catch (ClassNotFoundException | IOException e) {
             e.printStackTrace();
         }

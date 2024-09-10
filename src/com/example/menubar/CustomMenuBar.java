@@ -49,7 +49,6 @@ public class CustomMenuBar {
         openItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println("This works mf");
                 canvas.loadRoomsFromFile();
             }
         });
