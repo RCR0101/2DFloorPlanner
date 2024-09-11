@@ -12,7 +12,8 @@ public class LoadFile {
     ArrayList<Room> roomList;
 
     public ArrayList<Room> getFile() throws IOException, ClassNotFoundException{
-        FileInputStream fileInputStream = new FileInputStream(Constants.SAVE_PATH);
+        NewFile nFile = new NewFile();
+        FileInputStream fileInputStream = new FileInputStream(nFile.newSave());
         ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
         @SuppressWarnings("unchecked")
         ArrayList<Room> roomList = (ArrayList<Room>) objectInputStream.readObject();

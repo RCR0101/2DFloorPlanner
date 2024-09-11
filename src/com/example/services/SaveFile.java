@@ -14,7 +14,8 @@ public class SaveFile {
         this.roomList = roomList;
     }
     public void saveFile() throws IOException{
-        FileOutputStream fileOutputStream = new FileOutputStream(Constants.SAVE_PATH);
+        NewFile nFile = new NewFile();
+        FileOutputStream fileOutputStream = new FileOutputStream(nFile.newSave());
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
         objectOutputStream.writeObject(roomList);
         objectOutputStream.close();
