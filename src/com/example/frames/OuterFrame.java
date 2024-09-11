@@ -17,11 +17,11 @@ import menubar.CustomMenuBar;
 
 @SuppressWarnings("rawtypes")
 public class OuterFrame implements WindowListener {
-    public Canvas canvas;
-    @SuppressWarnings("unchecked")
+    public Canvas<?> canvas;
+
     public static void main(String[] args) {
         OuterFrame outerFrame = new OuterFrame();
-        outerFrame.canvas = new Canvas(40);;
+        outerFrame.canvas = new Canvas(40);
         CommandPanel cmdPanel = new CommandPanel(outerFrame.canvas);
         CustomMenuBar menuBar = new CustomMenuBar(outerFrame.canvas.getRoomList(), outerFrame.canvas);
         JFrame frame = new JFrame("2D Floor Planner");
@@ -42,15 +42,12 @@ public class OuterFrame implements WindowListener {
                 "/Users/adalmia/Documents/projects/java_dev/2DFloorPlanner/assets/images/logo.jpg");
         Image resizedImage = logo.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
         ImageIcon resizedIcon = new ImageIcon(resizedImage);
-        SaveFile sFile = new SaveFile(canvas.getRoomList());
-        try {
-            if(!sFile.isFileSaved())
+
+        if (SaveFile.hasUnsavedChanges() && !canvas.getRoomList().isEmpty()) {
             getResponse(resizedIcon);
             System.exit(0);
-        } catch (ClassNotFoundException e1) {
-            e1.printStackTrace();
-        } catch (IOException e1) {
-            e1.printStackTrace();
+        } else {
+            System.exit(0);
         }
     }
 
@@ -64,38 +61,32 @@ public class OuterFrame implements WindowListener {
                 resizedIcon);
 
         if (response == JOptionPane.YES_OPTION) {
-            System.out.println("Saving changes...");
             SaveFile sFile = new SaveFile(canvas.getRoomList());
             try {
                 sFile.saveFile();
             } catch (IOException e1) {
-                System.err.println("There was an IOException: "+e1);
+                System.err.println("There was an IOException: " + e1);
             }
         } else if (response == JOptionPane.NO_OPTION) {
+            System.exit(0); // Exit without saving
         }
     }
 
     @Override
-    public void windowOpened(WindowEvent e) {
-    }
+    public void windowOpened(WindowEvent e) {}
 
     @Override
-    public void windowClosed(WindowEvent e) {
-    }
+    public void windowClosed(WindowEvent e) {}
 
     @Override
-    public void windowIconified(WindowEvent e) {
-    }
+    public void windowIconified(WindowEvent e) {}
 
     @Override
-    public void windowDeiconified(WindowEvent e) {
-    }
+    public void windowDeiconified(WindowEvent e) {}
 
     @Override
-    public void windowActivated(WindowEvent e) {
-    }
+    public void windowActivated(WindowEvent e) {}
 
     @Override
-    public void windowDeactivated(WindowEvent e) {
-    }
+    public void windowDeactivated(WindowEvent e) {}
 }
