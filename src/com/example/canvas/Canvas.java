@@ -4,6 +4,7 @@ import javax.swing.JComponent;
 
 import models.Room;
 import services.LoadFile;
+import services.NewFile;
 
 import java.awt.Graphics;
 import java.awt.event.MouseAdapter;
@@ -51,12 +52,24 @@ public class Canvas<T> extends JComponent {
 
     public void loadRoomsFromFile() {
         try {
-            rooms = new LoadFile().getFile();
-            roomsLoaded = true;
-            repaint();
+            NewFile nFile = new NewFile();
+            String filePath = nFile.loadSave();
+
+            if (filePath != null) {
+                rooms = new LoadFile().getFile(filePath);
+                roomsLoaded = true;
+                repaint();
+            }
         } catch (ClassNotFoundException | IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void resetCanvas() {
+        rooms.clear();
+        clickX = -1;
+        clickY = -1;
+        repaint();
     }
 
     public int snapToGrid(int value) {
