@@ -1,8 +1,6 @@
 package menubar;
 
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -12,12 +10,13 @@ import javax.swing.JMenuItem;
 
 import canvas.Canvas;
 import models.Room;
-
+import services.NewFile;
 import services.SaveFile;
 
 public class CustomMenuBar {
     ArrayList<Room> rooms;
     Canvas<?> canvas;
+    String filePath;
     public CustomMenuBar(ArrayList<Room> rooms, Canvas<?> canvas) {
         this.rooms = rooms;
         this.canvas = canvas;
@@ -25,44 +24,34 @@ public class CustomMenuBar {
 
     public Component createMenuBar() {
         SaveFile sFile = new SaveFile(rooms);
+        NewFile nFile = new NewFile();
         JMenuBar mb = new JMenuBar();
         JMenu file = new JMenu("File");
         JMenu edit = new JMenu("Edit");
         JMenuItem newItem = new JMenuItem("New");
-        newItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+        newItem.addActionListener(e -> {
+            try{
+            filePath = nFile.createTempFile();
+            canvas.resetCanvas();
+            }catch(IOException eIO){
+                System.err.println("There was an IOException.");
             }
         });
         JMenuItem saveItem = new JMenuItem("Save");
-        saveItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    sFile.saveFile();
-                } catch (IOException eIO) {
-                    eIO.printStackTrace();
-                }
+        saveItem.addActionListener(e -> {
+            try {
+                sFile.saveFile();
+            } catch (IOException eIO) {
+                System.err.println("There was an IOException.");
             }
         });
         JMenuItem openItem = new JMenuItem("Open");
-        openItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                canvas.loadRoomsFromFile();
-            }
-        });
+        openItem.addActionListener(e -> canvas.loadRoomsFromFile());
         JMenuItem undo = new JMenuItem("Undo");
-        undo.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            }
+        undo.addActionListener(e -> {
         });
         JMenuItem redo = new JMenuItem("Redo");
-        redo.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            }
+        redo.addActionListener(e -> {
         });
         file.add(newItem);
         file.add(saveItem);
