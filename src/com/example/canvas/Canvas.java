@@ -11,7 +11,10 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 public class Canvas<T> extends JComponent {
@@ -52,9 +55,6 @@ public class Canvas<T> extends JComponent {
                 clone.add(Room.getCopy(room));
             }
             allRooms.add(clone);
-            roomsLoaded = true;
-        } catch (FileNotFoundException e) {
-            allRooms.add(new ArrayList<Room>());
             roomsLoaded = true;
         } catch (ClassNotFoundException | IOException e) {
             e.printStackTrace();
@@ -187,8 +187,8 @@ public class Canvas<T> extends JComponent {
     private class MouseMotionHandler extends MouseMotionAdapter {
         public void mouseMoved(MouseEvent e) {
             if(currentRoom != null){
-                currentRoom.x = snapToGrid(e.getX());
-                currentRoom.y = snapToGrid(e.getY());
+                currentRoom.x = e.getX();
+                currentRoom.y = e.getY();
                 repaint();
             }
             if(currentRoom == null){
