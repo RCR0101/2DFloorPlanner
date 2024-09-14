@@ -1,4 +1,4 @@
-package frames;
+package com.example.frames;
 
 import java.awt.BorderLayout;
 import java.awt.Image;
@@ -44,14 +44,15 @@ public class OuterFrame implements WindowListener {
         ImageIcon resizedIcon = new ImageIcon(resizedImage);
 
         if (SaveFile.hasUnsavedChanges() && !canvas.getRoomList().isEmpty()) {
-            getResponse(resizedIcon);
-            System.exit(0);
+            int resp = getResponse(resizedIcon);
+            if(resp!=-1)
+                System.exit(0);
         } else {
             System.exit(0);
         }
     }
 
-    private void getResponse(ImageIcon resizedIcon) {
+    private int getResponse(ImageIcon resizedIcon) {
         int response = JOptionPane.showConfirmDialog(
                 null,
                 "Do you want to save unsaved changes?",
@@ -68,8 +69,9 @@ public class OuterFrame implements WindowListener {
                 System.err.println("There was an IOException: " + e1);
             }
         } else if (response == JOptionPane.NO_OPTION) {
-            System.exit(0); // Exit without saving
+            System.exit(0);
         }
+        return response;
     }
 
     @Override
