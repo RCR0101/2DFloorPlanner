@@ -1,10 +1,12 @@
 package canvas;
 
 import javax.swing.JComponent;
+import javax.swing.JOptionPane;
 
 import models.Room;
 import services.LoadFile;
 import services.NewFile;
+import services.SaveFile;
 
 import java.awt.Graphics;
 import java.awt.event.MouseAdapter;
@@ -44,6 +46,7 @@ public class Canvas<T> extends JComponent {
                     clickY = snapToGrid(e.getY());
                     Room newRoom = new Room(clickX, clickY, 160, 160, getColor(fixture));
                     rooms.add(newRoom);
+                    SaveFile.markUnsavedChanges(); // Mark unsaved changes here
                     repaint();
                 }
             }
@@ -58,6 +61,7 @@ public class Canvas<T> extends JComponent {
             if (filePath != null) {
                 rooms = new LoadFile().getFile(filePath);
                 roomsLoaded = true;
+                SaveFile.resetUnsavedChanges(); // Reset unsaved changes after loading
                 repaint();
             }
         } catch (ClassNotFoundException | IOException e) {
@@ -66,9 +70,35 @@ public class Canvas<T> extends JComponent {
     }
 
     public void resetCanvas() {
+        // Check for unsaved changes before resetting
+        if (!rooms.isEmpty() && SaveFile.hasUnsavedChanges()) {
+            int option = JOptionPane.showConfirmDialog(
+                    this,
+                    "You have unsaved changes. Do you want to save them before creating a new canvas?",
+                    "Unsaved Changes",
+                    JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.WARNING_MESSAGE
+            );
+
+            if (option == JOptionPane.CANCEL_OPTION || option == JOptionPane.CLOSED_OPTION) {
+                // User canceled the operation; do not reset
+                return;
+            } else if (option == JOptionPane.YES_OPTION) {
+                // User chose to save changes
+                try {
+                    new SaveFile(rooms).saveFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            // If user chose NO, proceed to reset the canvas
+        }
+
+        // Proceed to reset the canvas
         rooms.clear();
         clickX = -1;
         clickY = -1;
+        SaveFile.resetUnsavedChanges(); // Reset unsaved changes after clearing
         repaint();
     }
 

@@ -1,10 +1,11 @@
 package services;
 
+import models.Room;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import models.Room;
 
 public class SaveFile {
     ArrayList<Room> roomList;
@@ -53,5 +54,9 @@ public class SaveFile {
 
     public static void markUnsavedChanges() {
         isUnsavedChanges = true;
+    }
+
+    public static void resetUnsavedChanges() {
+        isUnsavedChanges = false;
     }
 }
