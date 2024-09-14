@@ -187,8 +187,8 @@ public class Canvas<T> extends JComponent {
     private class MouseMotionHandler extends MouseMotionAdapter {
         public void mouseMoved(MouseEvent e) {
             if(currentRoom != null){
-                currentRoom.x = e.getX();
-                currentRoom.y = e.getY();
+                currentRoom.x = snapToGrid(e.getX());
+                currentRoom.y = snapToGrid(e.getY());
                 repaint();
             }
             if(currentRoom == null){
