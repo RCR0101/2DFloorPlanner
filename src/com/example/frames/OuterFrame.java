@@ -10,10 +10,10 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
-import panels.CommandPanel;
-import services.SaveFile;
-import canvas.Canvas;
-import menubar.CustomMenuBar;
+import com.example.panels.CommandPanel;
+import com.example.services.SaveFile;
+import com.example.canvas.Canvas;
+import com.example.menubar.CustomMenuBar;
 
 @SuppressWarnings("rawtypes")
 public class OuterFrame implements WindowListener {

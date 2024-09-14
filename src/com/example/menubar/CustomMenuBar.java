@@ -1,4 +1,4 @@
-package menubar;
+package com.example.menubar;
 
 import java.awt.Component;
 import java.io.IOException;
@@ -8,10 +8,10 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 
-import canvas.Canvas;
-import models.Room;
-import services.NewFile;
-import services.SaveFile;
+import com.example.canvas.Canvas;
+import com.example.models.Room;
+import com.example.services.NewFile;
+import com.example.services.SaveFile;
 
 public class CustomMenuBar {
     ArrayList<Room> rooms;

@@ -1,6 +1,6 @@
-package services;
+package com.example.services;
 
-import models.Room;
+import com.example.models.Room;
 
 import java.io.File;
 import java.io.FileInputStream;

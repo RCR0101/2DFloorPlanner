@@ -1,12 +1,12 @@
-package canvas;
+package com.example.canvas;
 
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 
-import models.Room;
-import services.LoadFile;
-import services.NewFile;
-import services.SaveFile;
+import com.example.models.Room;
+import com.example.services.LoadFile;
+import com.example.services.NewFile;
+import com.example.services.SaveFile;
 
 import java.awt.Graphics;
 import java.awt.event.MouseAdapter;

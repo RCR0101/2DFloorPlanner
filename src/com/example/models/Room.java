@@ -1,10 +1,12 @@
-package models;
+package com.example.models;
 
 import java.awt.Color;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
 public class Room implements Serializable {
+    @Serial
     private static final long serialVersionUID = 6697947686724816858L;
 
     public int x;
