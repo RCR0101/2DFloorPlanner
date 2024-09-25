@@ -3,12 +3,19 @@ package menubar;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.swing.*;
 
+import canvas.Canvas;
+import models.Room;
 import services.* ;
 import frames.*;
+
+import static java.lang.Math.max;
+
 public class CustomMenuBar {
+    public static int maxChangeLog = 0 ;
     OuterFrame frame;
     public Component createMenuBar(OuterFrame frame){
 
@@ -20,6 +27,7 @@ public class CustomMenuBar {
         JMenuItem saveItem = new JMenuItem("Save");
         JMenuItem openItem = new JMenuItem("Open");
 
+        //for undo/redo using keys :
         UndoActionListener undoActionListener = new UndoActionListener(frame);
         RedoActionListener redoActionListener = new RedoActionListener(frame);
         InputMap inputMap  = mb.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
@@ -48,38 +56,45 @@ public class CustomMenuBar {
 
 class UndoActionListener extends AbstractAction {
     OuterFrame frame ;
-    static boolean undoClicked = false;
+    Canvas canvas ;
     UndoActionListener(OuterFrame frame){
         this.frame = frame ;
+        this.canvas = frame.canvas ;
     }
     @Override
     public void actionPerformed(ActionEvent e) {
-        undoClicked = true;
-        try {
-            DoUndo.doundo(frame.canvas);
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        } catch (ClassNotFoundException ex) {
-            throw new RuntimeException(ex);
+
+        CustomMenuBar.maxChangeLog = max(CustomMenuBar.maxChangeLog,canvas.changeLog);
+        if (canvas.changeLog > 0) {
+
+            canvas.rooms.clear();
+            for(Object room : (ArrayList) canvas.allRooms.get(--canvas.changeLog)){
+                canvas.rooms.add(Room.getCopy((Room) room));
+            }
+            System.out.println("Going back to : " + canvas.changeLog);
+            canvas.fixture = null ;
+            canvas.repaint();
         }
     }
 
 }
 class RedoActionListener extends AbstractAction {
     OuterFrame frame ;
+    Canvas canvas ;
     RedoActionListener(OuterFrame frame){
         this.frame = frame ;
+        this.canvas = frame.canvas ;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        try{
-
-            DoRedo.doredo(frame.canvas);
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        } catch (ClassNotFoundException ex) {
-            throw new RuntimeException(ex);
+        if (canvas.changeLog  < CustomMenuBar.maxChangeLog) {
+            canvas.rooms.clear();
+            for(Object room : (ArrayList) canvas.allRooms.get(++canvas.changeLog)){
+                canvas.rooms.add(Room.getCopy((Room) room));
+            }
+            canvas.repaint();
+            canvas.fixture = null ;
         }
     }
 }

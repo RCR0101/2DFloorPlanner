@@ -20,8 +20,7 @@ public class OuterFrame  {
 
     public static void main(String[] args) {
         OuterFrame outerFrame = new OuterFrame();
-        outerFrame.canvas = new Canvas(40);
-
+        outerFrame.canvas = new Canvas(20);
         CommandPanel cmdPanel = new CommandPanel(outerFrame.canvas);
         CustomMenuBar menuBar = new CustomMenuBar();
         JFrame frame = new JFrame("2D Floor Planner");
@@ -32,7 +31,6 @@ public class OuterFrame  {
         frame.add(outerFrame.canvas, BorderLayout.CENTER);
         frame.add(cmdPanel.createCommandPanel(), BorderLayout.EAST);
         frame.add(menuBar.createMenuBar(outerFrame), BorderLayout.NORTH);
-
         frame.addWindowListener(new ClosingWindowListener(outerFrame));
         frame.setVisible(true);
     }
@@ -47,7 +45,6 @@ public class OuterFrame  {
         public void windowClosing(WindowEvent e) {
             String str = System.getProperty("user.dir") + File.separator  +"assets" + File.separator + "images" + File.separator + "logo.jpg";
             ImageIcon logo = new ImageIcon(str);
-
             Image resizedImage = logo.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
             ImageIcon resizedIcon = new ImageIcon(resizedImage);
             int response = JOptionPane.showConfirmDialog(
@@ -60,7 +57,7 @@ public class OuterFrame  {
 
             if (response == JOptionPane.YES_OPTION) {
                 System.out.println("Saving changes...");
-                SaveFile sFile = new SaveFile(outerFrame.canvas.getRoomList());
+                SaveFile sFile = new SaveFile(outerFrame.canvas.rooms);
                 try {
                     sFile.saveFile();
 

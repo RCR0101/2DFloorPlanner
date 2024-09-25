@@ -2,6 +2,7 @@ package models;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -25,6 +26,7 @@ public class Room implements Serializable {
         this.height = height;
         this.color = color;
     }
+    public Room(){}
     public static  Room getCopy(Room room){
         return new Room(room.x,room.y,room.width,room.height,room.color);
     }
@@ -37,6 +39,11 @@ public class Room implements Serializable {
             return true;
         }
         return false;
+    }
+    public boolean intersects(Room room){
+        Rectangle2D rect = new Rectangle2D.Double(x,y,width,height);
+        Rectangle2D rect2 = new Rectangle2D.Double(room.x,room.y,room.width,room.height);
+        return rect.intersects(rect2);
     }
     @Override
     public boolean equals(Object o){
