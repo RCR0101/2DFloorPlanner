@@ -1,50 +1,34 @@
 package canvas;
-
 import javax.swing.*;
-
-import frames.OuterFrame;
 import models.Room;
 import services.RetrieveFile;
 import services.*;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 public class Canvas<T> extends JComponent {
+    public boolean customRoom = false;
     public ArrayList<Room> rooms = new ArrayList<>(100);
     public ArrayList<ArrayList<Room>> allRooms = new ArrayList<>(100);
     public Room currentRoom = null;
     public T fixture = null;
-    private int clickX = -1, clickY = -1;
+    public boolean defaultRoom = false;
     private int gridSize = 50;
     private boolean roomsLoaded = false;
-    private boolean isRightClick = false;
     public int changeLog = 0;
+
     public Canvas(int gridSize) {
         this.gridSize = gridSize;
 
         loadRoomsFromFile();
-        addMouseMotionListener(new MouseMotionHandler());
-        addMouseListener(new MouseHandler());
-        addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
+        addMouseMotionListener(new Drag());
+        addMouseListener(new Drop());
 
-                if (fixture != null) {
-                    clickX = snapToGrid(e.getX());
-                    clickY = snapToGrid(e.getY());
-                    isRightClick = SwingUtilities.isRightMouseButton(e) ;
-                    repaint();
-                }
-            }
-        });
     }
 
     private void loadRoomsFromFile() {
@@ -84,41 +68,7 @@ public class Canvas<T> extends JComponent {
                 g2d.fill(new Rectangle2D.Double(rect.x, rect.y, rect.width, rect.height));
             }
         }
-        if (clickX != -1 && clickY != -1 && fixture != null && !isRightClick) {
-            Room newRoom = new Room(clickX, clickY, 160, 160, getColor(fixture));
-            rooms.add(newRoom); // Add new room to the list
 
-            g.setColor(newRoom.color);
-            Graphics2D g2d = (Graphics2D) g;
-            g2d.fill(new Rectangle2D.Double(newRoom.x, newRoom.y, newRoom.width, newRoom.height));
-            g.setColor(Color.BLACK);
-            g.drawString(fixture.toString(), clickX, clickY - 10);
-
-
-
-
-            clickX = -1 ;
-            clickY = -1 ;
-            fixture = null ;
-
-            ++changeLog;
-            ArrayList<Room> clone= new ArrayList<>();
-            for(Room room : rooms){
-                clone.add(Room.getCopy(room));
-            }
-            if(changeLog < allRooms.size()) {
-
-                allRooms.set(changeLog, clone);
-                System.out.println("Line 101 " + changeLog);
-                System.out.println();
-            }
-            else {
-                System.out.println("Line 103 " + changeLog);
-                allRooms.add(clone);
-            }
-
-
-        }
     }
 
     public void setSelectedObject(T fixture) {
@@ -150,7 +100,7 @@ public class Canvas<T> extends JComponent {
     public ArrayList<Room> getRoomList() {
         return rooms;
     }
-    private class MouseHandler extends MouseAdapter {
+    private class Drop extends MouseAdapter {
         public void mouseClicked(MouseEvent e) {
             if(e.getClickCount() > 1 && currentRoom == null) {
                 if(find(e.getPoint()) == null) {
@@ -159,42 +109,66 @@ public class Canvas<T> extends JComponent {
                     currentRoom = find(e.getPoint());
                 }
             }
-            if(SwingUtilities.isRightMouseButton(e)) {
-                currentRoom.x = snapToGrid(e.getX());
-                currentRoom.y = snapToGrid(e.getY()) ;
-                ++changeLog;
-                ArrayList<Room> clone= new ArrayList<>();
-                for(Room room : rooms){
-                    clone.add(Room.getCopy(room));
-                }
-                if(changeLog < allRooms.size()) {
 
-                    allRooms.set(changeLog, clone);
-                    System.out.println("Line 101 " + changeLog);
-                    System.out.println();
-                }
-                else {
-                    System.out.println("Line 103 " + changeLog);
-                    allRooms.add(clone);
-                }
-                currentRoom = null;
+            if(customRoom && currentRoom != null && SwingUtilities.isLeftMouseButton(e)) {
+                System.out.println("You clicked on a custom room");
+                SaveChange.saveChanges(Canvas.this);
+                repaint();
             }
 
 
+             if(SwingUtilities.isLeftMouseButton(e) && currentRoom == null) {
+                if(fixture == null) { currentRoom = new Room(snapToGrid(e.getX()),snapToGrid(e.getY()),0,0,
+                        new Color(25, 54, 68, 64));
+                }
+                    else {
+                    currentRoom = new Room(snapToGrid(e.getX()), snapToGrid(e.getY()), 160, 160, getColor(fixture));
+                }
+                rooms.add(currentRoom);
+
+            }
+
+             if(SwingUtilities.isLeftMouseButton(e) && currentRoom != null && e.getClickCount() == 1 && !customRoom) {
+                System.out.println("You clicked on a non-custom room");
+                SaveChange.saveChanges(Canvas.this);
+                repaint();
+            }
 
         }
     }
-    private class MouseMotionHandler extends MouseMotionAdapter {
+
+    private class Drag extends MouseMotionAdapter {
         public void mouseMoved(MouseEvent e) {
-            if(currentRoom != null){
-                currentRoom.x = e.getX();
-                currentRoom.y = e.getY();
-                repaint();
+            if(currentRoom != null && !customRoom) {
+                currentRoom.x = snapToGrid(e.getX());
+                currentRoom.y = snapToGrid(e.getY());
+
+            }
+            if(currentRoom != null && customRoom) {
+                System.out.println("L190");
+                double w =   snapToGrid(e.getX()) - currentRoom.x;
+                double h = snapToGrid(e.getY()) - currentRoom.y;
+                if(w >= 0) currentRoom.width =  w;
+                if(h >= 0) currentRoom.height = h;
+                //needs work
+                if(w < 0){
+                    currentRoom.x = snapToGrid(e.getX());
+                    currentRoom.width = -w ;
+                }
+                if(h < 0){
+                    currentRoom.y = snapToGrid(e.getY());
+                    currentRoom.height = -h ;
+                }
+
+
             }
             if(currentRoom == null){
-                repaint();
+                //System.out.println("current room is null");
             }
+            repaint();
         }
     }
+
+
 
 }

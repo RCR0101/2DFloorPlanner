@@ -67,11 +67,19 @@ public class CommandPanel {
         button.setBackground(Color.WHITE);
         button.setForeground(Color.DARK_GRAY);
         button.setFocusPainted(false);
-
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 canvas.setSelectedObject(fixture);
+
+                if(e.getSource() == button) {
+                    JButton button = (JButton) e.getSource();
+                    if(button.getText().equals("Insert")) {
+                        canvas.customRoom  = true ;
+                    }else{
+                        canvas.defaultRoom  = true ;
+                    }
+                }
             }
         });
 
