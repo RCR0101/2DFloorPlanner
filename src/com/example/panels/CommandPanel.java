@@ -1,4 +1,4 @@
-package panels;
+package com.example.panels;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -13,7 +13,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
-import canvas.Canvas;
+import com.example.canvas.Canvas;
 
 enum Room {
     bedroom, bathroom, living, kit

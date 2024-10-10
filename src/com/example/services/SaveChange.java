@@ -1,12 +1,12 @@
-package services;
+package com.example.services;
 
 
 import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
 
-import canvas.Canvas;
-import models.Room;
+import com.example.canvas.Canvas;
+import com.example.models.Room;
 
 import javax.swing.*;
 

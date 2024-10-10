@@ -1,12 +1,9 @@
-package services;
+package com.example.services;
 
-import canvas.Canvas;
-import models.Room;
+import com.example.canvas.Canvas;
+import com.example.models.Room;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.ArrayList;
 
 public class DoRedo {

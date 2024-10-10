@@ -1,7 +1,7 @@
-package services;
+package com.example.services;
 
-import canvas.Canvas;
-import models.Room;
+import com.example.canvas.Canvas;
+import com.example.models.Room;
 
 import java.io.*;
 import java.util.ArrayList;
