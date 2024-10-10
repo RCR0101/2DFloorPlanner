@@ -67,6 +67,7 @@ public class CommandPanel {
         insertButton.addActionListener(e -> {
             canvas.customRoom = true;
             canvas.currentRoom = null; // Reset any current room being edited
+            cardLayout.show(cardPanel, "Insert");
             System.out.println("Custom room mode activated.");
         });
 
