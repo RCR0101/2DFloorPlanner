@@ -3,13 +3,13 @@ package com.example.menubar;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import java.util.ArrayList;
 import javax.swing.*;
-
+import java.util.ArrayList;
 import com.example.canvas.Canvas;
 import com.example.models.Room;
 import com.example.services.FileManager;
 import com.example.frames.OuterFrame;
+import com.example.services.Util;
 
 import static java.lang.Math.max;
 
@@ -28,11 +28,19 @@ public class CustomMenuBar {
         JMenu file = new JMenu("File");
         JMenu edit = new JMenu("Edit");
 
-        JMenuItem newItem = new JMenuItem("New");
-        JMenuItem saveItem = new JMenuItem("Save");
-        JMenuItem openItem = new JMenuItem("Open");
-        JMenuItem undo = new JMenuItem("Undo");
-        JMenuItem redo = new JMenuItem("Redo");
+        // Load icons
+        ImageIcon newIcon = Util.resizeImage(new ImageIcon(Util.getAbsolutePath("assets/icons/new.png")));
+        ImageIcon openIcon = Util.resizeImage(new ImageIcon(Util.getAbsolutePath("assets/icons/open.png")));
+        ImageIcon saveIcon = Util.resizeImage(new ImageIcon(Util.getAbsolutePath("assets/icons/save.png")));
+        ImageIcon redoIcon = Util.resizeImage(new ImageIcon(Util.getAbsolutePath("assets/icons/redo.png")));
+        ImageIcon undoIcon = Util.resizeImage(new ImageIcon(Util.getAbsolutePath("assets/icons/undo.png")));
+
+        // Create menu items with icons
+        JMenuItem newItem = new JMenuItem("New", newIcon);
+        JMenuItem saveItem = new JMenuItem("Save", saveIcon);
+        JMenuItem openItem = new JMenuItem("Open", openIcon);
+        JMenuItem undo = new JMenuItem("Undo", undoIcon);
+        JMenuItem redo = new JMenuItem("Redo", redoIcon);
 
         // Setup file menu actions
         setupNewAction(newItem);

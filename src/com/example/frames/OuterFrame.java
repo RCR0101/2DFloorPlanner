@@ -11,6 +11,7 @@ import com.example.panels.CommandPanel;
 import com.example.services.FileManager;
 import com.example.canvas.Canvas;
 import com.example.menubar.CustomMenuBar;
+import com.formdev.flatlaf.FlatDarkLaf;
 
 @SuppressWarnings("rawtypes")
 public class OuterFrame {
@@ -18,6 +19,7 @@ public class OuterFrame {
     private FileManager fileManager;
 
     public static void main(String[] args) {
+        FlatDarkLaf.setup();
         OuterFrame outerFrame = new OuterFrame();
         outerFrame.fileManager = new FileManager(); // Initialize the FileManager
         canvas = new Canvas(20);
