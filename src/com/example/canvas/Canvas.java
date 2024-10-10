@@ -25,7 +25,6 @@ public class Canvas<T> extends JComponent {
     public Canvas(int gridSize) {
         this.gridSize = gridSize;
 
-        loadRoomsFromFile();
         addMouseMotionListener(new Drag());
         addMouseListener(new Drop());
 
@@ -97,15 +96,15 @@ public class Canvas<T> extends JComponent {
     public Color getColor(T fixture) {
         switch (fixture.toString()) {
             case "bedroom":
-                return new Color(255, 0, 0, 64);
+                return new Color(255, 0, 0, 90);
             case "bathroom":
-                return new Color(0, 255, 0, 64);
+                return new Color(0, 255, 0, 90);
             case "living":
-                return new Color(0, 0, 255, 64);
+                return new Color(0, 0, 255, 90);
             case "kit":
-                return new Color(255, 255, 0, 128);
+                return new Color(255, 255, 0, 90);
             default:
-                return new Color(0, 255, 255, 64);
+                return new Color(0, 255, 255, 90);
         }
     }
 
