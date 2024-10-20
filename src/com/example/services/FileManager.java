@@ -93,7 +93,7 @@ public class FileManager {
             tempFile.delete();
             savePath = newLocation;
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Error copying temp file to new location");
         }
     }
 

@@ -31,11 +31,10 @@ public class ClosingWindowListener extends WindowAdapter {
         if (response == JOptionPane.YES_OPTION) {
             System.out.println("Saving changes...");
             try {
-                outerFrame.getFileManager().saveFile(outerFrame.canvas.rooms);
+                outerFrame.getFileManager().saveFile(OuterFrame.canvas.rooms);
                 System.exit(0);
             } catch (IOException e1) {
                 System.err.println("There was an IOException: " + e1);
-                e1.printStackTrace();
             }
         } else if (response == JOptionPane.NO_OPTION) {
             System.exit(0);

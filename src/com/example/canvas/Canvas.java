@@ -17,10 +17,8 @@ public class Canvas<T> extends JComponent {
     public Room currentRoom = null;
     public T fixture = null;
     public boolean defaultRoom = false;
-    private int gridSize = 50;
-    private boolean roomsLoaded = false;
+    private final int gridSize;
     public int changeLog = 0;
-    private int clickX = -1, clickY = -1;
 
     public Canvas(int gridSize) {
         this.gridSize = gridSize;
@@ -36,6 +34,7 @@ public class Canvas<T> extends JComponent {
 
     public void loadRoomsFromFile() {
         FileManager fileManager = new FileManager();
+        boolean roomsLoaded = false;
         try {
             String filePath = fileManager.openFileChooser();
             if (filePath != null) {
@@ -46,10 +45,9 @@ public class Canvas<T> extends JComponent {
                 }
                 allRooms.add(clone);
 
-                // Update state
                 roomsLoaded = true;
-                fileManager.resetUnsavedChanges(); // Reset unsaved changes after loading
-                repaint(); // Repaint the component to reflect the loaded state
+                FileManager.resetUnsavedChanges();
+                repaint();
             } else {
                 // If no file is selected, initialize rooms to an empty list
                 System.out.println("No file selected. Initializing an empty rooms list.");
@@ -58,7 +56,7 @@ public class Canvas<T> extends JComponent {
             }
         } catch (ClassNotFoundException | IOException e) {
             System.err.println("Failed to load rooms from the file.");
-            e.printStackTrace();
+            System.out.println("Error: " + e.getMessage());
             rooms = new ArrayList<>(); // Fallback to an empty list in case of error
             roomsLoaded = false;
         }
@@ -94,18 +92,13 @@ public class Canvas<T> extends JComponent {
     }
 
     public Color getColor(T fixture) {
-        switch (fixture.toString()) {
-            case "bedroom":
-                return new Color(255, 0, 0, 90);
-            case "bathroom":
-                return new Color(0, 255, 0, 90);
-            case "living":
-                return new Color(0, 0, 255, 90);
-            case "kit":
-                return new Color(255, 255, 0, 90);
-            default:
-                return new Color(0, 255, 255, 90);
-        }
+        return switch (fixture.toString()) {
+            case "bedroom" -> new Color(255, 0, 0, 90);
+            case "bathroom" -> new Color(0, 255, 0, 90);
+            case "living" -> new Color(0, 0, 255, 90);
+            case "kit" -> new Color(255, 255, 0, 90);
+            default -> new Color(0, 255, 255, 90);
+        };
     }
 
     public Room find(Point2D point){
@@ -199,17 +192,16 @@ public class Canvas<T> extends JComponent {
                 try {
                     fileManager.saveFile(rooms);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    System.err.println("Error: " + e.getMessage());
                     System.err.println("Failed to save changes.");
                 }
             }
             // If user chose NO, proceed to reset the canvas
         }
 
-        // Proceed to reset the canvas
         rooms.clear();
-        clickX = -1;
-        clickY = -1;
+        int clickX = -1;
+        int clickY = -1;
         FileManager.resetUnsavedChanges(); // Reset unsaved changes after clearing
         repaint();
     }

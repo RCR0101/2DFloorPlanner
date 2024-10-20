@@ -70,10 +70,10 @@ public class CustomMenuBar {
     }
 
     private void setupNewAction(JMenuItem newItem) {
-        newItem.addActionListener(e -> {
+        newItem.addActionListener(_ -> {
             try {
                 String tempFilePath = fileManager.createTempFile();
-                frame.canvas.resetCanvas();
+                OuterFrame.canvas.resetCanvas();
                 System.out.println("New file created at: " + tempFilePath);
             } catch (IOException eIO) {
                 System.err.println("There was an IOException while creating a new file.");
@@ -82,9 +82,9 @@ public class CustomMenuBar {
     }
 
     private void setupSaveAction(JMenuItem saveItem) {
-        saveItem.addActionListener(e -> {
+        saveItem.addActionListener(_ -> {
             try {
-                fileManager.saveFile(frame.canvas.rooms);
+                fileManager.saveFile(OuterFrame.canvas.rooms);
                 System.out.println("File saved successfully.");
             } catch (IOException eIO) {
                 System.err.println("There was an IOException while saving the file.");
@@ -93,9 +93,9 @@ public class CustomMenuBar {
     }
 
     private void setupOpenAction(JMenuItem openItem) {
-        openItem.addActionListener(e -> {
+        openItem.addActionListener(_ -> {
             try {
-                frame.canvas.loadRoomsFromFile();
+                OuterFrame.canvas.loadRoomsFromFile();
                 System.out.println("File opened successfully.");
             } catch (Exception ex) {
                 System.err.println("Failed to open file: " + ex.getMessage());
@@ -120,7 +120,7 @@ class UndoActionListener extends AbstractAction {
 
     UndoActionListener(OuterFrame frame) {
         this.frame = frame;
-        this.canvas = frame.canvas;
+        this.canvas = OuterFrame.canvas;
     }
 
     @Override
@@ -144,7 +144,7 @@ class RedoActionListener extends AbstractAction {
 
     RedoActionListener(OuterFrame frame) {
         this.frame = frame;
-        this.canvas = frame.canvas;
+        this.canvas = OuterFrame.canvas;
     }
 
     @Override

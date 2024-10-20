@@ -1,8 +1,6 @@
 package com.example.panels;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.*;
@@ -64,7 +62,7 @@ public class CommandPanel {
         tabStyleButton(propertiesButton);
 
         // When the "Insert" button is clicked, activate custom room mode
-        insertButton.addActionListener(e -> {
+        insertButton.addActionListener(_ -> {
             canvas.customRoom = true;
             canvas.currentRoom = null; // Reset any current room being edited
             cardLayout.show(cardPanel, "Insert");
@@ -72,7 +70,7 @@ public class CommandPanel {
         });
 
         // Show the "Properties" panel when the Properties button is clicked
-        propertiesButton.addActionListener(e -> cardLayout.show(cardPanel, "Properties"));
+        propertiesButton.addActionListener(_ -> cardLayout.show(cardPanel, "Properties"));
 
         tabBar.add(insertButton);
         tabBar.add(Box.createRigidArea(new Dimension(20, 0)));
@@ -140,18 +138,15 @@ public class CommandPanel {
         button.setMaximumSize(new Dimension(150, 35));
         button.setMinimumSize(new Dimension(150, 35));
 
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                canvas.setSelectedObject(fixture);
+        button.addActionListener(e -> {
+            canvas.setSelectedObject(fixture);
 
-                if (e.getSource() == button) {
-                    JButton button = (JButton) e.getSource();
-                    if (button.getText().equals("Insert")) {
-                        canvas.customRoom = true;
-                    } else {
-                        canvas.defaultRoom = true;
-                    }
+            if (e.getSource() == button) {
+                JButton button1 = (JButton) e.getSource();
+                if (button1.getText().equals("Insert")) {
+                    canvas.customRoom = true;
+                } else {
+                    canvas.defaultRoom = true;
                 }
             }
         });
