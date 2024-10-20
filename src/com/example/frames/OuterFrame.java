@@ -11,34 +11,30 @@ import com.example.panels.CommandPanel;
 import com.example.services.FileManager;
 import com.example.canvas.Canvas;
 import com.example.menubar.CustomMenuBar;
-import com.formdev.flatlaf.FlatDarkLaf;
 
 @SuppressWarnings("rawtypes")
-public class OuterFrame {
+public class OuterFrame extends JFrame {
     static public Canvas canvas;
     private FileManager fileManager;
 
-    public static void main(String[] args) {
-        FlatDarkLaf.setup();
-        OuterFrame outerFrame = new OuterFrame();
-        outerFrame.fileManager = new FileManager(); // Initialize the FileManager
+    public OuterFrame() {
+        this.fileManager = new FileManager(); // Initialize the FileManager
         canvas = new Canvas(20);
         CommandPanel cmdPanel = new CommandPanel(canvas);
-        CustomMenuBar menuBar = new CustomMenuBar(outerFrame, outerFrame.fileManager);
-        JFrame frame = new JFrame("2D Floor Planner");
-        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-        frame.setResizable(false);
-        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        frame.setLayout(new BorderLayout());
-        frame.add(outerFrame.canvas, BorderLayout.CENTER);
-        frame.add(cmdPanel.createCommandPanel(), BorderLayout.EAST);
-        frame.add(menuBar.createMenuBar(), BorderLayout.NORTH);
-        frame.addWindowListener(new ClosingWindowListener(outerFrame));
-        frame.setVisible(true);
+        CustomMenuBar menuBar = new CustomMenuBar(this, this.fileManager);
+
+        setTitle("2D Floor Planner");
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setResizable(false);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        setLayout(new BorderLayout());
+        add(canvas, BorderLayout.CENTER);
+        add(cmdPanel.createCommandPanel(), BorderLayout.EAST);
+        add(menuBar.createMenuBar(), BorderLayout.NORTH);
+        addWindowListener(new ClosingWindowListener(this));
     }
 
     static class ClosingWindowListener extends WindowAdapter {
-
         private OuterFrame outerFrame;
 
         public ClosingWindowListener(OuterFrame outerFrame) {
