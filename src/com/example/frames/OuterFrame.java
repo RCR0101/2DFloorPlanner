@@ -6,18 +6,20 @@ import javax.swing.*;
 import com.example.panels.CommandPanel;
 import com.example.services.FileManager;
 import com.example.canvas.Canvas;
-import com.example.menubar.CustomMenuBar;
+import com.example.menubar.*;
 
 @SuppressWarnings("rawtypes")
 public class OuterFrame extends JFrame {
     static public Canvas canvas;
     private FileManager fileManager;
+    private CustomMenuBarLogic customMenuLogic;
 
     public OuterFrame() {
-        this.fileManager = new FileManager(); // Initialize the FileManager
+        this.fileManager = new FileManager();
+        this.customMenuLogic = new CustomMenuBarLogic(this, this.fileManager);
         canvas = new Canvas(20);
         CommandPanel cmdPanel = new CommandPanel(canvas);
-        CustomMenuBar menuBar = new CustomMenuBar(this, this.fileManager);
+        CustomMenuBarUI menuBar = new CustomMenuBarUI(this, this.customMenuLogic);
 
         setTitle("2D Floor Planner");
         setExtendedState(JFrame.MAXIMIZED_BOTH);
