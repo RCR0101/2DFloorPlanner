@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 public class DoRedo {
 
-    public static void doredo(Canvas canvas) throws IOException, ClassNotFoundException {
+    public static void doRedo(Canvas canvas) throws IOException, ClassNotFoundException {
         if (canvas.changeLog  < DoUndo.maxChangeLog) {
             canvas.rooms.clear();
             for(Object room : (ArrayList) canvas.allRooms.get(++canvas.changeLog)){

@@ -35,10 +35,7 @@ public class Room implements Serializable {
     }
     public boolean contains(Point2D p){
 
-        if(p.getX() > x && p.getX() < x + width && p.getY() > y && p.getY() < y + height){
-            return true;
-        }
-        return false;
+        return p.getX() > x && p.getX() < x + width && p.getY() > y && p.getY() < y + height;
     }
     public boolean intersects(Room room){
         Rectangle2D rect = new Rectangle2D.Double(x,y,width,height);
@@ -52,10 +49,7 @@ public class Room implements Serializable {
         }
         if(o == null) return false ;
         Room room = (Room) o;
-        if(room.x == x && room.y == y && room.width == width && room.height == height && room.color == color){
-            return true;
-        }
-        return false;
+        return room.x == x && room.y == y && room.width == width && room.height == height && room.color == color;
     }
     @Override
     public int hashCode(){
