@@ -126,55 +126,76 @@ public class Canvas<T> extends JComponent {
     private class Drop extends MouseAdapter {
         public void mouseClicked(MouseEvent e) {
             Point2D point = e.getPoint();
-            if(SwingUtilities.isLeftMouseButton(e) && fixture != null && (fixture.toString().equals("door") || fixture.toString().equals("window"))) {
-                Room room = find(point);
-                if (room != null) {
-                    Room.SidePosition sidePosition = room.getSideAtPoint(point);
-                    if (sidePosition != null) {
-                        // Determine the opening type
-                        Opening.Type openingType = fixture.toString().equals("door") ? Opening.Type.DOOR : Opening.Type.WINDOW;
-                        double openingLength = 50.0;
-                        double snappedPosition = snapToGrid((int) sidePosition.position);
 
-                        // Add the opening to the room
-                        Opening opening = new Opening(openingType, sidePosition.side, snappedPosition, openingLength);
-                        room.addOpening(opening);
-
-                        // Repaint to reflect changes
-                        repaint();
-                    }
+            if (SwingUtilities.isLeftMouseButton(e)) {
+                if (isFixtureOpening()) {
+                    handleOpeningPlacement(point);
+                } else if (e.getClickCount() > 1 && currentRoom == null) {
+                    handleDoubleClick(point);
+                } else if (customRoom && currentRoom != null) {
+                    handleCustomRoomClick();
+                } else if (currentRoom == null) {
+                    handleRoomCreation(e);
+                } else if (e.getClickCount() == 1 && !customRoom) {
+                    handleRoomClick();
                 }
             }
-            if(e.getClickCount() > 1 && currentRoom == null) {
-                if(find(e.getPoint()) == null) {
-                    System.out.println("Room not found");
-                } else {
-                    currentRoom = find(e.getPoint());
+        }
+
+        private boolean isFixtureOpening() {
+            return fixture != null && (fixture.toString().equals("door") || fixture.toString().equals("window"));
+        }
+
+        private void handleOpeningPlacement(Point2D point) {
+            Room room = find(point);
+            if (room != null) {
+                Room.SidePosition sidePosition = room.getSideAtPoint(point);
+                if (sidePosition != null) {
+                    Opening.Type openingType = fixture.toString().equals("door") ? Opening.Type.DOOR : Opening.Type.WINDOW;
+                    double openingLength = 50.0;
+                    double snappedPosition = snapToGrid((int) sidePosition.position);
+
+                    // Add the opening to the room
+                    Opening opening = new Opening(openingType, sidePosition.side, snappedPosition, openingLength);
+                    room.addOpening(opening);
+
+                    // Repaint to reflect changes
+                    repaint();
                 }
             }
+        }
 
-            if(customRoom && currentRoom != null && SwingUtilities.isLeftMouseButton(e)) {
-                System.out.println("You clicked on a custom room");
-                SaveChange.saveChanges(Canvas.this);
-                repaint();
+        private void handleDoubleClick(Point2D point) {
+            currentRoom = find(point);
+            if (currentRoom == null) {
+                System.out.println("Room not found");
+            }
+        }
+
+        private void handleCustomRoomClick() {
+            System.out.println("You clicked on a custom room");
+            SaveChange.saveChanges(Canvas.this);
+            repaint();
+        }
+
+        private void handleRoomCreation(MouseEvent e) {
+            int x = snapToGrid(e.getX());
+            int y = snapToGrid(e.getY());
+
+            if (fixture == null) {
+                currentRoom = new Room(x, y, 0, 0, new Color(25, 54, 68, 64));
+            } else {
+                currentRoom = new Room(x, y, 160, 160, getColor(fixture));
             }
 
-            if(SwingUtilities.isLeftMouseButton(e) && currentRoom == null && !(fixture.toString().equals("door") || fixture.toString().equals("window"))) {
-                if(fixture == null) {
-                    currentRoom = new Room(snapToGrid(e.getX()), snapToGrid(e.getY()), 0, 0,
-                            new Color(25, 54, 68, 64));
-                } else {
-                    currentRoom = new Room(snapToGrid(e.getX()), snapToGrid(e.getY()), 160, 160, getColor(fixture));
-                }
-                rooms.add(currentRoom);
-                repaint();
-            }
+            rooms.add(currentRoom);
+            repaint();
+        }
 
-            if(SwingUtilities.isLeftMouseButton(e) && currentRoom != null && e.getClickCount() == 1 && !customRoom) {
-                System.out.println("You clicked on a non-custom room");
-                SaveChange.saveChanges(Canvas.this);
-                repaint();
-            }
+        private void handleRoomClick() {
+            System.out.println("You clicked on a non-custom room");
+            SaveChange.saveChanges(Canvas.this);
+            repaint();
         }
     }
 
