@@ -1,6 +1,8 @@
 package com.example.models;
 
-public class Opening {
+import java.io.Serializable;
+
+public class Opening implements Serializable {
     public enum Type { DOOR, WINDOW }
     public enum Side { TOP, BOTTOM, LEFT, RIGHT }
 

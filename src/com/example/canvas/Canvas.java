@@ -267,6 +267,7 @@ public class Canvas<T> extends JComponent {
     private void drawSideWithOpenings(Graphics2D g2d, Room room, Opening.Side side) {
         double x1, y1, x2, y2;
         double sideLength;
+        List<Opening> sideOpenings = new ArrayList<>();
 
         // Determine side coordinates and length
         switch (side) {
@@ -301,10 +302,12 @@ public class Canvas<T> extends JComponent {
             default:
                 return;
         }
-        List<Opening> sideOpenings = room.openings.stream()
-                .filter(o -> o.side == side)
-                .sorted(Comparator.comparingDouble(o -> o.position))
-                .toList();
+        if(room.openings != null) {
+            sideOpenings = room.openings.stream()
+                    .filter(o -> o.side == side)
+                    .sorted(Comparator.comparingDouble(o -> o.position))
+                    .toList();
+        }
 
         // Draw the side with adjustments for openings
         double currentPosition = 0.0;
