@@ -1,6 +1,8 @@
 package com.example.canvas;
 
 import javax.swing.*;
+
+import com.example.models.Opening;
 import com.example.models.Room;
 import com.example.services.*;
 import java.awt.*;
@@ -9,6 +11,8 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 public class Canvas<T> extends JComponent {
     public boolean customRoom = false;
@@ -85,15 +89,11 @@ public class Canvas<T> extends JComponent {
 
         // Draw rooms with borders
         if (!rooms.isEmpty()) {
-            for (Room rect : rooms) {
+            for (Room room : rooms) {
                 // Fill the room with its color
-                g2d.setColor(rect.color);
-                g2d.fill(new Rectangle2D.Double(rect.x, rect.y, rect.width, rect.height));
-
-                // Draw the border around the room
-                g2d.setColor(Color.black.darker());
-                g2d.setStroke(new BasicStroke(2));  // Thicker border
-                g2d.draw(new Rectangle2D.Double(rect.x, rect.y, rect.width, rect.height));
+                g2d.setColor(room.color);
+                g2d.fill(new Rectangle2D.Double(room.x, room.y, room.width, room.height));
+                drawRoomBorderWithOpenings(g2d, room);
             }
         }
     }
@@ -125,6 +125,26 @@ public class Canvas<T> extends JComponent {
 
     private class Drop extends MouseAdapter {
         public void mouseClicked(MouseEvent e) {
+            Point2D point = e.getPoint();
+            if(SwingUtilities.isLeftMouseButton(e) && fixture != null && (fixture.toString().equals("door") || fixture.toString().equals("window"))) {
+                Room room = find(point);
+                if (room != null) {
+                    Room.SidePosition sidePosition = room.getSideAtPoint(point);
+                    if (sidePosition != null) {
+                        // Determine the opening type
+                        Opening.Type openingType = fixture.toString().equals("door") ? Opening.Type.DOOR : Opening.Type.WINDOW;
+                        double openingLength = 50.0;
+                        double snappedPosition = snapToGrid((int) sidePosition.position);
+
+                        // Add the opening to the room
+                        Opening opening = new Opening(openingType, sidePosition.side, snappedPosition, openingLength);
+                        room.addOpening(opening);
+
+                        // Repaint to reflect changes
+                        repaint();
+                    }
+                }
+            }
             if(e.getClickCount() > 1 && currentRoom == null) {
                 if(find(e.getPoint()) == null) {
                     System.out.println("Room not found");
@@ -139,7 +159,7 @@ public class Canvas<T> extends JComponent {
                 repaint();
             }
 
-            if(SwingUtilities.isLeftMouseButton(e) && currentRoom == null) {
+            if(SwingUtilities.isLeftMouseButton(e) && currentRoom == null && !(fixture.toString().equals("door") || fixture.toString().equals("window"))) {
                 if(fixture == null) {
                     currentRoom = new Room(snapToGrid(e.getX()), snapToGrid(e.getY()), 0, 0,
                             new Color(25, 54, 68, 64));
@@ -215,5 +235,109 @@ public class Canvas<T> extends JComponent {
         int clickY = -1;
         FileManager.resetUnsavedChanges(); // Reset unsaved changes after clearing
         repaint();
+    }
+
+    private void drawRoomBorderWithOpenings(Graphics2D g2d, Room room) {
+        for (Opening.Side side : Opening.Side.values()) {
+            drawSideWithOpenings(g2d, room, side);
+        }
+    }
+
+    private void drawSideWithOpenings(Graphics2D g2d, Room room, Opening.Side side) {
+        double x1, y1, x2, y2;
+        double sideLength;
+
+        // Determine side coordinates and length
+        switch (side) {
+            case TOP:
+                x1 = room.x;
+                y1 = room.y;
+                x2 = room.x + room.width;
+                y2 = room.y;
+                sideLength = room.width;
+                break;
+            case BOTTOM:
+                x1 = room.x;
+                y1 = room.y + room.height;
+                x2 = room.x + room.width;
+                y2 = room.y + room.height;
+                sideLength = room.width;
+                break;
+            case LEFT:
+                x1 = room.x;
+                y1 = room.y;
+                x2 = room.x;
+                y2 = room.y + room.height;
+                sideLength = room.height;
+                break;
+            case RIGHT:
+                x1 = room.x + room.width;
+                y1 = room.y;
+                x2 = room.x + room.width;
+                y2 = room.y + room.height;
+                sideLength = room.height;
+                break;
+            default:
+                return;
+        }
+        List<Opening> sideOpenings = room.openings.stream()
+                .filter(o -> o.side == side)
+                .sorted(Comparator.comparingDouble(o -> o.position))
+                .toList();
+
+        // Draw the side with adjustments for openings
+        double currentPosition = 0.0;
+        for (Opening opening : sideOpenings) {
+            if (currentPosition < opening.position) {
+                drawLineSegment(g2d, room, side, currentPosition, opening.position, "SOLID");
+            }
+            if (opening.type == Opening.Type.WINDOW) {
+                drawLineSegment(g2d, room, side, opening.position, opening.position + opening.length, "DOTTED");
+            }
+            currentPosition = opening.position + opening.length;
+        }
+        if (currentPosition < sideLength) {
+            drawLineSegment(g2d, room, side, currentPosition, sideLength, "SOLID");
+        }
+    }
+
+    private void drawLineSegment(Graphics2D g2d, Room room, Opening.Side side, double startPos, double endPos, String style) {
+        double xStart = 0, yStart = 0, xEnd = 0, yEnd = 0;
+        switch (side) {
+            case TOP:
+                xStart = room.x + startPos;
+                yStart = room.y;
+                xEnd = room.x + endPos;
+                yEnd = room.y;
+                break;
+            case BOTTOM:
+                xStart = room.x + startPos;
+                yStart = room.y + room.height;
+                xEnd = room.x + endPos;
+                yEnd = room.y + room.height;
+                break;
+            case LEFT:
+                xStart = room.x;
+                yStart = room.y + startPos;
+                xEnd = room.x;
+                yEnd = room.y + endPos;
+                break;
+            case RIGHT:
+                xStart = room.x + room.width;
+                yStart = room.y + startPos;
+                xEnd = room.x + room.width;
+                yEnd = room.y + endPos;
+                break;
+        }
+        if ("SOLID".equals(style)) {
+            g2d.setStroke(new BasicStroke(2));
+        } else if ("DOTTED".equals(style)) {
+            float[] dashPattern = {5, 5};
+            g2d.setStroke(new BasicStroke(2, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER,
+                    10, dashPattern, 0));
+        }
+
+        // Draw the line segment
+        g2d.drawLine((int) xStart, (int) yStart, (int) xEnd, (int) yEnd);
     }
 }

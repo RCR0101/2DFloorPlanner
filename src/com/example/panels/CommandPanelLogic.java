@@ -8,7 +8,11 @@ enum Room {
 }
 
 enum Furniture {
-    closet, lamp, bed, door, sofa, tc
+    closet, lamp, bed, sofa, tc
+}
+
+enum WallFurniture {
+    door, window
 }
 public class CommandPanelLogic {
     private Canvas canvas;
@@ -40,7 +44,9 @@ public class CommandPanelLogic {
 
         insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
         insertPanel.add(createTitle("Furniture"));
-        insertPanel.add(createButton("Door", Furniture.door));
+        insertPanel.add(createButton("Door", WallFurniture.door));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        insertPanel.add(createButton("Window", WallFurniture.window));
         insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
         insertPanel.add(createButton("Sofa", Furniture.sofa));
         insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
