@@ -69,20 +69,31 @@ public class Canvas<T> extends JComponent {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        g.setColor(Color.GRAY);
 
+        // Enable anti-aliasing for smoother graphics
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        // Draw the grid with a subtle color
+        g2d.setColor(new Color(200, 200, 200));  // Lighter gray for the grid
         for (int i = 0; i < getWidth(); i += gridSize) {
-            g.drawLine(i, 0, i, getHeight());
+            g2d.drawLine(i, 0, i, getHeight());
         }
         for (int j = 0; j < getHeight(); j += gridSize) {
-            g.drawLine(0, j, getWidth(), j);
+            g2d.drawLine(0, j, getWidth(), j);
         }
 
+        // Draw rooms with borders
         if (!rooms.isEmpty()) {
             for (Room rect : rooms) {
-                g.setColor(rect.color);
-                Graphics2D g2d = (Graphics2D) g;
+                // Fill the room with its color
+                g2d.setColor(rect.color);
                 g2d.fill(new Rectangle2D.Double(rect.x, rect.y, rect.width, rect.height));
+
+                // Draw the border around the room
+                g2d.setColor(Color.black.darker());
+                g2d.setStroke(new BasicStroke(2));  // Thicker border
+                g2d.draw(new Rectangle2D.Double(rect.x, rect.y, rect.width, rect.height));
             }
         }
     }
