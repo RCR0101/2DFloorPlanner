@@ -198,12 +198,7 @@ public class Canvas<T> extends JComponent {
         }
 
         private String getFurnitureImage(T fixture) {
-            return switch (fixture.toString()) {
-                case "sofa" -> Util.getAbsolutePath("assets/images/furniture/sofa.png");
-                case "bed" -> Util.getAbsolutePath("assets/images/furniture/kBed.png");
-                case "tc" -> Util.getAbsolutePath("assets/images/furniture/dTable.png");
-                default -> null;
-            };
+                return fixture != null ? Util.getAbsolutePath("assets/images/furniture/" + fixture.toString() + ".png") : null;
         }
         private void handleOpeningPlacement(Point2D point) {
             Room room = find(point);

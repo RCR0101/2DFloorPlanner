@@ -1,5 +1,5 @@
 package com.example.panels;
 
 public enum FurnitureList {
-    closet, lamp, bed, sofa, tc
+    qBed, sofa, dTable, tvTable, toilet, sSofa, kBed, sDesk, sink, snTable, cot, drawer, bDrawer, gTable, lSofa, bTub
 }

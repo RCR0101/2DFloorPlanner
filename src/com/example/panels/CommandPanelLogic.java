@@ -39,14 +39,42 @@ public class CommandPanelLogic {
         insertPanel.add(createButton("Kitchen", Room.kit));
 
         insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
-        insertPanel.add(createTitle("FurnitureList"));
+        insertPanel.add(createTitle("Furniture"));
         insertPanel.add(createButton("Door", WallFurniture.door));
         insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
         insertPanel.add(createButton("Window", WallFurniture.window));
         insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        insertPanel.add(createButton("Queen Bed", FurnitureList.qBed));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
         insertPanel.add(createButton("Sofa", FurnitureList.sofa));
         insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
-        insertPanel.add(createButton("Table & Chairs", FurnitureList.tc));
+        insertPanel.add(createButton("Dining Table", FurnitureList.dTable));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        insertPanel.add(createButton("TV Table", FurnitureList.tvTable));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        insertPanel.add(createButton("Toilet", FurnitureList.toilet));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        insertPanel.add(createButton("Single Sofa", FurnitureList.sSofa));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        insertPanel.add(createButton("King Bed", FurnitureList.kBed));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        insertPanel.add(createButton("Study Desk", FurnitureList.sDesk));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        insertPanel.add(createButton("Sink", FurnitureList.sink));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        insertPanel.add(createButton("Snack Table", FurnitureList.snTable));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        insertPanel.add(createButton("Cot", FurnitureList.cot));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        insertPanel.add(createButton("Drawer", FurnitureList.drawer));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        insertPanel.add(createButton("Bedroom Drawer", FurnitureList.bDrawer));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        insertPanel.add(createButton("Glass Table", FurnitureList.gTable));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        insertPanel.add(createButton("L-shaped Sofa", FurnitureList.lSofa));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        insertPanel.add(createButton("Bathtub", FurnitureList.bTub));
 
         cardPanel.add(insertPanel, "Insert");
     }
