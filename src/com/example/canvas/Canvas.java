@@ -2,8 +2,10 @@ package com.example.canvas;
 
 import javax.swing.*;
 
+import com.example.models.Furniture;
 import com.example.models.Opening;
 import com.example.models.Room;
+import com.example.panels.FurnitureList;
 import com.example.services.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -18,6 +20,7 @@ public class Canvas<T> extends JComponent {
     public boolean customRoom = false;
     public ArrayList<Room> rooms = new ArrayList<>(100);
     public ArrayList<ArrayList<Room>> allRooms = new ArrayList<>(100);
+    private List<Furniture> furnitureItems = new ArrayList<>(100);
     public Room currentRoom = null;
     public T fixture = null;
     public boolean defaultRoom = false;
@@ -90,10 +93,14 @@ public class Canvas<T> extends JComponent {
         // Draw rooms with borders
         if (!rooms.isEmpty()) {
             for (Room room : rooms) {
-                // Fill the room with its color
                 g2d.setColor(room.color);
                 g2d.fill(new Rectangle2D.Double(room.x, room.y, room.width, room.height));
                 drawRoomBorderWithOpenings(g2d, room);
+            }
+        }
+        if(!furnitureItems.isEmpty()) {
+            for (Furniture furniture : furnitureItems) {
+                g2d.drawImage(furniture.image, (int) furniture.x, (int) furniture.y, (int) furniture.width, (int) furniture.height, null);
             }
         }
     }
@@ -126,10 +133,12 @@ public class Canvas<T> extends JComponent {
     private class Drop extends MouseAdapter {
         public void mouseClicked(MouseEvent e) {
             Point2D point = e.getPoint();
-
             if (SwingUtilities.isLeftMouseButton(e)) {
                 if (isFixtureOpening()) {
                     handleOpeningPlacement(point);
+                } else if (isFurnitureSelected()) {
+                    System.err.println(fixture);
+                    handleFurnitureDrop(point, fixture);
                 } else if (e.getClickCount() > 1 && currentRoom == null) {
                     handleDoubleClick(point);
                 } else if (customRoom && currentRoom != null) {
@@ -141,11 +150,30 @@ public class Canvas<T> extends JComponent {
                 }
             }
         }
+        private boolean isFurnitureSelected() {
+            return fixture instanceof FurnitureList;
+        }
+
+        private void handleFurnitureDrop(Point2D point, T fixture) {
+            int x = snapToGrid((int) point.getX());
+            int y = snapToGrid((int) point.getY());
+
+            String imagePath = getFurnitureImage(fixture);
+            addFurniture(x, y, imagePath);
+        }
 
         private boolean isFixtureOpening() {
             return fixture != null && (fixture.toString().equals("door") || fixture.toString().equals("window"));
         }
 
+        private String getFurnitureImage(T fixture) {
+            return switch (fixture.toString()) {
+                case "sofa" -> Util.getAbsolutePath("assets/images/furniture/sofa.png");
+                case "bed" -> Util.getAbsolutePath("assets/images/furniture/kBed.png");
+                case "tc" -> Util.getAbsolutePath("assets/images/furniture/dTable.png");
+                default -> null;
+            };
+        }
         private void handleOpeningPlacement(Point2D point) {
             Room room = find(point);
             if (room != null) {
@@ -363,5 +391,11 @@ public class Canvas<T> extends JComponent {
 
         // Draw the line segment
         g2d.drawLine((int) xStart, (int) yStart, (int) xEnd, (int) yEnd);
+    }
+
+    public void addFurniture(double x, double y, String imagePath) {
+        Furniture furniture = new Furniture(x, y, imagePath);
+        furnitureItems.add(furniture);
+        repaint();
     }
 }

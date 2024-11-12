@@ -7,10 +7,6 @@ enum Room {
     bedroom, bathroom, living, kit
 }
 
-enum Furniture {
-    closet, lamp, bed, sofa, tc
-}
-
 enum WallFurniture {
     door, window
 }
@@ -43,14 +39,14 @@ public class CommandPanelLogic {
         insertPanel.add(createButton("Kitchen", Room.kit));
 
         insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
-        insertPanel.add(createTitle("Furniture"));
+        insertPanel.add(createTitle("FurnitureList"));
         insertPanel.add(createButton("Door", WallFurniture.door));
         insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
         insertPanel.add(createButton("Window", WallFurniture.window));
         insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
-        insertPanel.add(createButton("Sofa", Furniture.sofa));
+        insertPanel.add(createButton("Sofa", FurnitureList.sofa));
         insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
-        insertPanel.add(createButton("Table & Chairs", Furniture.tc));
+        insertPanel.add(createButton("Table & Chairs", FurnitureList.tc));
 
         cardPanel.add(insertPanel, "Insert");
     }
@@ -96,7 +92,7 @@ public class CommandPanelLogic {
                 JButton button1 = (JButton) e.getSource();
                 if (button1.getText().equals("Insert")) {
                     canvas.customRoom = true;
-                } else {
+                } else if(!(fixture instanceof FurnitureList)) {
                     canvas.defaultRoom = true;
                 }
             }
