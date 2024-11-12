@@ -14,6 +14,7 @@ public class Furniture implements Serializable {
     public double width;
     public double height;
     public BufferedImage image;
+    private int rotationAngle = 0;
 
     public Furniture(double x, double y, String imagePath) {
         this.x = x;
@@ -90,5 +91,13 @@ public class Furniture implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(x, y, width, height, image);
+    }
+    public void rotate() {
+        rotationAngle = (rotationAngle + 90) % 360;
+    }
+
+    // Getter for rotation angle
+    public int getRotationAngle() {
+        return rotationAngle;
     }
 }

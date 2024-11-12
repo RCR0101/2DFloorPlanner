@@ -9,6 +9,7 @@ import com.example.panels.FurnitureList;
 import com.example.services.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
@@ -98,9 +99,31 @@ public class Canvas<T> extends JComponent {
                 drawRoomBorderWithOpenings(g2d, room);
             }
         }
-        if(!furnitureItems.isEmpty()) {
+        if (!furnitureItems.isEmpty()) {
             for (Furniture furniture : furnitureItems) {
-                g2d.drawImage(furniture.image, (int) furniture.x, (int) furniture.y, (int) furniture.width, (int) furniture.height, null);
+                AffineTransform originalTransform = g2d.getTransform();
+
+                // Calculate the center of the furniture
+                double centerX = furniture.x + furniture.width / 2;
+                double centerY = furniture.y + furniture.height / 2;
+
+                // Apply rotation around the center of the furniture
+                AffineTransform rotation = AffineTransform.getRotateInstance(
+                        Math.toRadians(furniture.getRotationAngle()), centerX, centerY);
+                g2d.transform(rotation);
+
+                // Draw the image
+                g2d.drawImage(
+                        furniture.image,
+                        (int) furniture.x,
+                        (int) furniture.y,
+                        (int) furniture.width,
+                        (int) furniture.height,
+                        null
+                );
+
+                // Reset the transform to avoid affecting other drawings
+                g2d.setTransform(originalTransform);
             }
         }
     }
@@ -133,6 +156,7 @@ public class Canvas<T> extends JComponent {
     private class Drop extends MouseAdapter {
         public void mouseClicked(MouseEvent e) {
             Point2D point = e.getPoint();
+            Furniture clickedFurniture = findFurnitureAtPoint(point);
             if (SwingUtilities.isLeftMouseButton(e)) {
                 if (isFixtureOpening()) {
                     handleOpeningPlacement(point);
@@ -148,12 +172,19 @@ public class Canvas<T> extends JComponent {
                 } else if (e.getClickCount() == 1 && !customRoom) {
                     handleRoomClick();
                 }
+            } else if(SwingUtilities.isRightMouseButton(e)){
+                if(clickedFurniture != null){
+                    handleFurnitureRotation(clickedFurniture);
+                }
             }
         }
         private boolean isFurnitureSelected() {
             return fixture instanceof FurnitureList;
         }
-
+        private void handleFurnitureRotation(Furniture furniture) {
+            furniture.rotate(); // Rotate the furniture by 90 degrees
+            repaint();          // Redraw the canvas to reflect changes
+        }
         private void handleFurnitureDrop(Point2D point, T fixture) {
             int x = snapToGrid((int) point.getX());
             int y = snapToGrid((int) point.getY());
@@ -226,7 +257,26 @@ public class Canvas<T> extends JComponent {
             repaint();
         }
     }
+    private Furniture findFurnitureAtPoint(Point2D point) {
+        for (Furniture furniture : furnitureItems) {
+            // Create a rectangle representing the furniture's bounds
+            Rectangle2D bounds = new Rectangle2D.Double(furniture.x, furniture.y, furniture.width, furniture.height);
 
+            // Apply rotation to the bounds for accurate hit detection
+            AffineTransform transform = AffineTransform.getRotateInstance(
+                    Math.toRadians(furniture.getRotationAngle()),
+                    furniture.x + furniture.width / 2,
+                    furniture.y + furniture.height / 2
+            );
+
+            Shape rotatedBounds = transform.createTransformedShape(bounds);
+
+            if (rotatedBounds.contains(point)) {
+                return furniture;
+            }
+        }
+        return null; // No furniture found at the clicked point
+    }
     private class Drag extends MouseMotionAdapter {
         public void mouseMoved(MouseEvent e) {
             if(currentRoom != null && !customRoom) {
