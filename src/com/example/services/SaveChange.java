@@ -14,11 +14,8 @@ public class SaveChange {
         public static boolean isIntersection(Canvas canvas){
             if(canvas == null) return false;
             if(canvas.currentRoom == null) return false;
-
             for(Object otherRoom : canvas.rooms){
-
                 if(canvas.currentRoom.intersects((Room)otherRoom) && canvas.currentRoom != otherRoom){
-
                     System.out.println("Returning true");
                     return true;
                 }
@@ -27,7 +24,6 @@ public class SaveChange {
         }
         public static void saveChanges(Canvas canvas) {
             if(!isIntersection(canvas)) {
-
                 ++canvas.changeLog;
                 ArrayList<Room> clone = new ArrayList<>();
                 for (Object room : canvas.rooms) {
@@ -57,7 +53,6 @@ public class SaveChange {
                         JOptionPane.DEFAULT_OPTION,
                         JOptionPane.ERROR_MESSAGE,
                         resizedIcon
-
                 );
 
             }

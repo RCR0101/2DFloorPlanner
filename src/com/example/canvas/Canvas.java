@@ -27,6 +27,8 @@ public class Canvas<T> extends JComponent {
     public boolean defaultRoom = false;
     private final int gridSize;
     public int changeLog = 0;
+    private Furniture selectedFurniture = null;
+    private Point2D dragStart = null;
 
     public Canvas(int gridSize) {
         this.gridSize = gridSize;
@@ -178,6 +180,28 @@ public class Canvas<T> extends JComponent {
                 }
             }
         }
+        @Override
+        public void mousePressed(MouseEvent e) {
+            Point2D point = e.getPoint();
+            if (SwingUtilities.isLeftMouseButton(e)) {
+                selectedFurniture = findFurnitureAtPoint(point);
+                if (selectedFurniture != null) {
+                    dragStart = point;
+                }
+            }
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            if (selectedFurniture != null) {
+                // Snap the final position to grid
+                selectedFurniture.x = snapToGrid((int)selectedFurniture.x);
+                selectedFurniture.y = snapToGrid((int)selectedFurniture.y);
+                selectedFurniture = null;
+                dragStart = null;
+                repaint();
+            }
+        }
         private boolean isFurnitureSelected() {
             return fixture instanceof FurnitureList;
         }
@@ -254,11 +278,9 @@ public class Canvas<T> extends JComponent {
     }
     private Furniture findFurnitureAtPoint(Point2D point) {
         for (Furniture furniture : furnitureItems) {
-            // Create a rectangle representing the furniture's bounds
             Rectangle2D bounds = new Rectangle2D.Double(furniture.x, furniture.y, furniture.width, furniture.height);
 
-            // Apply rotation to the bounds for accurate hit detection
-            AffineTransform transform = AffineTransform.getRotateInstance(
+        AffineTransform transform = AffineTransform.getRotateInstance(
                     Math.toRadians(furniture.getRotationAngle()),
                     furniture.x + furniture.width / 2,
                     furniture.y + furniture.height / 2
@@ -273,6 +295,23 @@ public class Canvas<T> extends JComponent {
         return null; // No furniture found at the clicked point
     }
     private class Drag extends MouseMotionAdapter {
+        @Override
+        public void mouseDragged(MouseEvent e) {
+            if (selectedFurniture != null && dragStart != null) {
+                // Calculate the movement delta
+                double dx = e.getX() - dragStart.getX();
+                double dy = e.getY() - dragStart.getY();
+
+                // Update furniture position
+                selectedFurniture.x += dx;
+                selectedFurniture.y += dy;
+
+                // Update drag start point
+                dragStart = e.getPoint();
+
+                repaint();
+            }
+        }
         public void mouseMoved(MouseEvent e) {
             if(currentRoom != null && !customRoom) {
                 currentRoom.x = snapToGrid(e.getX());
