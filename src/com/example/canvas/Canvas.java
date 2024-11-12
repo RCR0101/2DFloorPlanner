@@ -160,16 +160,16 @@ public class Canvas<T> extends JComponent {
             if (SwingUtilities.isLeftMouseButton(e)) {
                 if (isFixtureOpening()) {
                     handleOpeningPlacement(point);
-                } else if (isFurnitureSelected()) {
+                } else if (isFurnitureSelected() && find(point)!=null) {
                     System.err.println(fixture);
                     handleFurnitureDrop(point, fixture);
-                } else if (e.getClickCount() > 1 && currentRoom == null) {
+                } else if (e.getClickCount() > 1 && currentRoom == null && !isFurnitureSelected()) {
                     handleDoubleClick(point);
-                } else if (customRoom && currentRoom != null) {
+                } else if (customRoom && currentRoom != null && !isFurnitureSelected()) {
                     handleCustomRoomClick();
-                } else if (currentRoom == null) {
+                } else if (currentRoom == null && !isFurnitureSelected()) {
                     handleRoomCreation(e);
-                } else if (e.getClickCount() == 1 && !customRoom) {
+                } else if (e.getClickCount() == 1 && !customRoom && !isFurnitureSelected()) {
                     handleRoomClick();
                 }
             } else if(SwingUtilities.isRightMouseButton(e)){

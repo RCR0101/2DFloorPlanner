@@ -75,6 +75,7 @@ public class CommandPanelLogic {
         insertPanel.add(createButton("L-shaped Sofa", FurnitureList.lSofa));
         insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
         insertPanel.add(createButton("Bathtub", FurnitureList.bTub));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 40)));
 
         cardPanel.add(insertPanel, "Insert");
     }

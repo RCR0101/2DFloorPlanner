@@ -16,7 +16,7 @@ public class CommandPanelUI {
         this.cardPanel = new JPanel(cardLayout);
     }
 
-    public JPanel createCommandPanel() {
+    public JScrollPane createCommandPanel() {
         JPanel commandPanel = new JPanel();
         commandPanel.setLayout(new BoxLayout(commandPanel, BoxLayout.Y_AXIS));
         commandPanel.setBackground(new Color(0, 0, 0)); // Dark background
@@ -30,8 +30,11 @@ public class CommandPanelUI {
         // Setup card panels
         commandPanelLogic.createInsertPanel(cardPanel);
         commandPanelLogic.createPropertiesPanel(cardPanel);
+        JScrollPane scrollPane = new JScrollPane(commandPanel);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
-        return commandPanel;
+        return scrollPane;
     }
 
     public Component createTabBar() {
