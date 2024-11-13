@@ -20,7 +20,7 @@ public class RedoActionListener extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (canvas.changeLog < CustomMenuBarLogic.maxChangeLog) {
+        if (canvas.changeLog < Math.min(CustomMenuBarLogic.maxChangeLog, canvas.allStates.size())) {
             CanvasState newState = (CanvasState) canvas.allStates.get(++canvas.changeLog);
 
             // Restore rooms and furniture
