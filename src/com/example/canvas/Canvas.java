@@ -12,7 +12,6 @@ import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -60,7 +59,6 @@ public class Canvas<T> extends JComponent {
                 FileManager.resetUnsavedChanges();
                 repaint();
             } else {
-                // If no file is selected, initialize rooms to an empty list
                 System.out.println("No file selected. Initializing an empty rooms list.");
                 rooms = new ArrayList<>();
                 roomsLoaded = false;
@@ -81,12 +79,10 @@ public class Canvas<T> extends JComponent {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        // Enable anti-aliasing for smoother graphics
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        // Draw the grid with a subtle color
-        g2d.setColor(new Color(200, 200, 200));  // Lighter gray for the grid
+        g2d.setColor(new Color(200, 200, 200));
         for (int i = 0; i < getWidth(); i += gridSize) {
             g2d.drawLine(i, 0, i, getHeight());
         }
@@ -198,8 +194,8 @@ public class Canvas<T> extends JComponent {
         @Override
         public void mouseReleased(MouseEvent e) {
             Point2D point = new Point2D.Double();
-            point.setLocation(selectedFurniture.x, selectedFurniture.y);
             if (selectedFurniture != null) {
+                point.setLocation(selectedFurniture.x, selectedFurniture.y);
                 if(find(point)!=null) {
                     selectedFurniture.x = snapToGrid((int) selectedFurniture.x);
                     selectedFurniture.y = snapToGrid((int) selectedFurniture.y);
@@ -258,7 +254,7 @@ public class Canvas<T> extends JComponent {
         }
 
         private String getFurnitureImage(T fixture) {
-                return fixture != null ? Util.getAbsolutePath("assets/images/furniture/" + fixture.toString() + ".png") : null;
+                return fixture != null ? Util.getAbsolutePath("assets/images/furniture/" + fixture + ".png") : null;
         }
         private void handleOpeningPlacement(Point2D point) {
             Room room = find(point);
@@ -268,6 +264,34 @@ public class Canvas<T> extends JComponent {
                     Opening.Type openingType = fixture.toString().equals("door") ? Opening.Type.DOOR : Opening.Type.WINDOW;
                     double openingLength = 50.0;
                     double snappedPosition = snapToGrid((int) sidePosition.position);
+                    List<Opening> existingOpenings = room.openings.stream()
+                            .filter(o -> o.side == sidePosition.side)
+                            .toList();
+
+                    boolean overlapDetected = false;
+                    for (Opening existingOpening : existingOpenings) {
+                        double existingStart = existingOpening.position;
+                        double existingEnd = existingOpening.position + existingOpening.length;
+
+                        double newStart = snappedPosition;
+                        double newEnd = snappedPosition + openingLength;
+
+                        if (newStart < existingEnd && newEnd > existingStart) {
+                            // Overlap detected
+                            overlapDetected = true;
+                            break;
+                        }
+                    }
+
+                    if (overlapDetected) {
+                        JOptionPane.showMessageDialog(
+                                null,
+                                "Overlap detected! Openings cannot overlap.",
+                                "Overlap",
+                                JOptionPane.ERROR_MESSAGE
+                        );
+                        return;
+                    }
 
                     // Add the opening to the room
                     Opening opening = new Opening(openingType, sidePosition.side, snappedPosition, openingLength);
@@ -331,9 +355,6 @@ public class Canvas<T> extends JComponent {
         return null; // No furniture found at the clicked point
     }
     private class Drag extends MouseMotionAdapter {
-        private Furniture draggingFurniture = null;
-        private Point2D.Double dragOffsetFurniture = new Point2D.Double();
-        private Point2D.Double originalFurniturePosition = new Point2D.Double();
         @Override
         public void mouseDragged(MouseEvent e) {
             if (selectedFurniture != null && dragStart != null) {
