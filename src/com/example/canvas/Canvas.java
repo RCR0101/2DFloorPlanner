@@ -214,9 +214,6 @@ public class Canvas<T> extends JComponent {
                                 resizedIcon
                         );
                     }
-                    selectedFurniture = null;
-                    dragStart = null;
-                    repaint();
                 } else {
                     selectedFurniture.x = originalFurniturePosition.x;
                     selectedFurniture.y = originalFurniturePosition.y;
@@ -232,6 +229,9 @@ public class Canvas<T> extends JComponent {
                             resizedIcon
                     );
                 }
+                selectedFurniture = null;
+                dragStart = null;
+                repaint();
             }
         }
         private boolean isFurnitureSelected() {
@@ -247,6 +247,9 @@ public class Canvas<T> extends JComponent {
 
             String imagePath = getFurnitureImage(fixture);
             addFurniture(x, y, imagePath);
+            selectedFurniture = null;
+            dragStart = null;
+            repaint();
         }
 
         private boolean isFixtureOpening() {
