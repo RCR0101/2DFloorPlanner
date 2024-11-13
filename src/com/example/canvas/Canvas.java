@@ -12,6 +12,7 @@ import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -156,6 +157,7 @@ public class Canvas<T> extends JComponent {
     }
 
     private class Drop extends MouseAdapter {
+        private Point2D.Double originalFurniturePosition = new Point2D.Double();
         public void mouseClicked(MouseEvent e) {
             Point2D point = e.getPoint();
             Furniture clickedFurniture = findFurnitureAtPoint(point);
@@ -187,6 +189,8 @@ public class Canvas<T> extends JComponent {
                 selectedFurniture = findFurnitureAtPoint(point);
                 if (selectedFurniture != null) {
                     dragStart = point;
+                    originalFurniturePosition.x = selectedFurniture.x;
+                    originalFurniturePosition.y = selectedFurniture.y;
                 }
             }
         }
@@ -194,9 +198,23 @@ public class Canvas<T> extends JComponent {
         @Override
         public void mouseReleased(MouseEvent e) {
             if (selectedFurniture != null) {
-                // Snap the final position to grid
                 selectedFurniture.x = snapToGrid((int)selectedFurniture.x);
                 selectedFurniture.y = snapToGrid((int)selectedFurniture.y);
+                if (FurnitureOverlapHandler.isOverlap(selectedFurniture, furnitureItems)) {
+                    selectedFurniture.x = originalFurniturePosition.x;
+                    selectedFurniture.y = originalFurniturePosition.y;
+                    String str = Util.getAbsolutePath("assets/images/logo.png");
+                    ImageIcon logo = new ImageIcon(str);
+                    Image resizedImage = logo.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
+                    ImageIcon resizedIcon = new ImageIcon(resizedImage);
+                    JOptionPane.showMessageDialog(
+                            Canvas.this,
+                            "Furniture cannot overlap.",
+                            "Overlap Detected",
+                            JOptionPane.ERROR_MESSAGE,
+                            resizedIcon
+                    );
+                }
                 selectedFurniture = null;
                 dragStart = null;
                 repaint();
@@ -295,6 +313,9 @@ public class Canvas<T> extends JComponent {
         return null; // No furniture found at the clicked point
     }
     private class Drag extends MouseMotionAdapter {
+        private Furniture draggingFurniture = null;
+        private Point2D.Double dragOffsetFurniture = new Point2D.Double();
+        private Point2D.Double originalFurniturePosition = new Point2D.Double();
         @Override
         public void mouseDragged(MouseEvent e) {
             if (selectedFurniture != null && dragStart != null) {
