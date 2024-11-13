@@ -304,7 +304,7 @@ public class Canvas<T> extends JComponent {
                     }
 
                     if (openingType == Opening.Type.DOOR) {
-                        if (!isAdjacentToRoom(room, sidePosition, snappedPosition)) {
+                        if (!isAdjacentToRoom(room, sidePosition, snappedPosition, true)) {
                             JOptionPane.showMessageDialog(
                                     null,
                                     "Invalid door placement! Doors must lead to another room.",
@@ -312,6 +312,16 @@ public class Canvas<T> extends JComponent {
                                     JOptionPane.ERROR_MESSAGE
                             );
                             return; // Cancel door placement
+                        }
+                    } else {
+                        if (isAdjacentToRoom(room, sidePosition, snappedPosition, false)) {
+                            JOptionPane.showMessageDialog(
+                                    null,
+                                    "Invalid window placement! Windows cannot be between rooms.",
+                                    "Placement Error",
+                                    JOptionPane.ERROR_MESSAGE
+                            );
+                            return;
                         }
                     }
                     Opening opening = new Opening(openingType, sidePosition.side, snappedPosition, openingLength);
@@ -582,8 +592,8 @@ public class Canvas<T> extends JComponent {
         changeLog = allStates.size() - 1;  // Update the change log index
     }
 
-    private boolean isAdjacentToRoom(Room room, Room.SidePosition sidePosition, double doorPosition) {
-        if(!room.color.equals(new Color(255, 0, 0, 90)) && !room.color.equals(new Color(0, 255, 0, 90)))
+    private boolean isAdjacentToRoom(Room room, Room.SidePosition sidePosition, double doorPosition, boolean isDoor) {
+        if(!room.color.equals(new Color(255, 0, 0, 90)) && !room.color.equals(new Color(0, 255, 0, 90)) && isDoor)
             return true;
         double checkX = room.x;
         double checkY = room.y;
