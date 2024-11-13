@@ -15,10 +15,12 @@ public class Furniture implements Serializable {
     public double height;
     public BufferedImage image;
     private int rotationAngle = 0;
+    private String imagePath = "";
 
     public Furniture(double x, double y, String imagePath) {
         this.x = x;
         this.y = y;
+        this.imagePath = imagePath;
         try {
             this.image = ImageIO.read(new File(imagePath));
             this.image = shrinkImage(this.image, 0.3);
@@ -99,5 +101,9 @@ public class Furniture implements Serializable {
     // Getter for rotation angle
     public int getRotationAngle() {
         return rotationAngle;
+    }
+
+    public static Furniture getCopy(Furniture furniture) {
+        return new Furniture(furniture.x,furniture.y,furniture.imagePath);
     }
 }

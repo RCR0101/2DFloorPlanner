@@ -21,7 +21,7 @@ public class Canvas<T> extends JComponent {
     public boolean customRoom = false;
     public ArrayList<Room> rooms = new ArrayList<>(100);
     public ArrayList<ArrayList<Room>> allRooms = new ArrayList<>(100);
-    private List<Furniture> furnitureItems = new ArrayList<>(100);
+    public List<Furniture> furnitureItems = new ArrayList<>(100);
     public Room currentRoom = null;
     public T fixture = null;
     public boolean defaultRoom = false;
@@ -29,6 +29,7 @@ public class Canvas<T> extends JComponent {
     public int changeLog = 0;
     private Furniture selectedFurniture = null;
     private Point2D dragStart = null;
+    public ArrayList<CanvasState> allStates = new ArrayList<>(100);
 
     public Canvas(int gridSize) {
         this.gridSize = gridSize;
@@ -189,6 +190,7 @@ public class Canvas<T> extends JComponent {
                     originalFurniturePosition.y = selectedFurniture.y;
                 }
             }
+            saveCurrentState();
         }
 
         @Override
@@ -231,6 +233,7 @@ public class Canvas<T> extends JComponent {
                 }
                 selectedFurniture = null;
                 dragStart = null;
+                saveCurrentState();
                 repaint();
             }
         }
@@ -247,6 +250,7 @@ public class Canvas<T> extends JComponent {
 
             String imagePath = getFurnitureImage(fixture);
             addFurniture(x, y, imagePath);
+            saveCurrentState();
             selectedFurniture = null;
             dragStart = null;
             repaint();
@@ -299,7 +303,7 @@ public class Canvas<T> extends JComponent {
                     // Add the opening to the room
                     Opening opening = new Opening(openingType, sidePosition.side, snappedPosition, openingLength);
                     room.addOpening(opening);
-
+                    saveCurrentState();
                     // Repaint to reflect changes
                     repaint();
                 }
@@ -330,6 +334,7 @@ public class Canvas<T> extends JComponent {
             }
 
             rooms.add(currentRoom);
+            saveCurrentState();
             repaint();
         }
 
@@ -427,6 +432,8 @@ public class Canvas<T> extends JComponent {
         }
 
         rooms.clear();
+        furnitureItems.clear();
+        saveCurrentState();
         int clickX = -1;
         int clickY = -1;
         FileManager.resetUnsavedChanges(); // Reset unsaved changes after clearing
@@ -544,5 +551,21 @@ public class Canvas<T> extends JComponent {
         Furniture furniture = new Furniture(x, y, imagePath);
         furnitureItems.add(furniture);
         repaint();
+    }
+
+    public void saveCurrentState() {
+        List<Room> roomsCopy = new ArrayList<>();
+        for (Room room : rooms) {
+            roomsCopy.add(Room.getCopy(room));
+        }
+
+        List<Furniture> furnitureCopy = new ArrayList<>();
+        for (Furniture furniture : furnitureItems) {
+            furnitureCopy.add(Furniture.getCopy(furniture));
+        }
+
+        // Save the new state
+        allStates.add(new CanvasState(roomsCopy, furnitureCopy));
+        changeLog = allStates.size() - 1;  // Update the change log index
     }
 }

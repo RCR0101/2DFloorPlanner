@@ -9,7 +9,7 @@ public class CustomMenuBarLogic {
     private OuterFrame frame;
     private FileManager fileManager;
 
-    public static int maxChangeLog = 0;
+    public static int maxChangeLog = 100;
 
     public CustomMenuBarLogic(OuterFrame frame, FileManager fileManager) {
         this.frame = frame;
