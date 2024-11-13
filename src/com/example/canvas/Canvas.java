@@ -265,15 +265,18 @@ public class Canvas<T> extends JComponent {
         }
         private void handleOpeningPlacement(Point2D point) {
             Room room = find(point);
+            List<Opening> existingOpenings = new ArrayList<>();
             if (room != null) {
                 Room.SidePosition sidePosition = room.getSideAtPoint(point);
                 if (sidePosition != null) {
                     Opening.Type openingType = fixture.toString().equals("door") ? Opening.Type.DOOR : Opening.Type.WINDOW;
                     double openingLength = 50.0;
                     double snappedPosition = snapToGrid((int) sidePosition.position);
-                    List<Opening> existingOpenings = room.openings.stream()
-                            .filter(o -> o.side == sidePosition.side)
-                            .toList();
+                    if(room.openings != null) {
+                        existingOpenings = room.openings.stream()
+                                .filter(o -> o.side == sidePosition.side)
+                                .toList();
+                    }
 
                     boolean overlapDetected = false;
                     for (Opening existingOpening : existingOpenings) {
@@ -300,7 +303,17 @@ public class Canvas<T> extends JComponent {
                         return;
                     }
 
-                    // Add the opening to the room
+                    if (openingType == Opening.Type.DOOR) {
+                        if (!isAdjacentToRoom(room, sidePosition, snappedPosition)) {
+                            JOptionPane.showMessageDialog(
+                                    null,
+                                    "Invalid door placement! Doors must lead to another room.",
+                                    "Placement Error",
+                                    JOptionPane.ERROR_MESSAGE
+                            );
+                            return; // Cancel door placement
+                        }
+                    }
                     Opening opening = new Opening(openingType, sidePosition.side, snappedPosition, openingLength);
                     room.addOpening(opening);
                     saveCurrentState();
@@ -567,5 +580,46 @@ public class Canvas<T> extends JComponent {
         // Save the new state
         allStates.add(new CanvasState(roomsCopy, furnitureCopy));
         changeLog = allStates.size() - 1;  // Update the change log index
+    }
+
+    private boolean isAdjacentToRoom(Room room, Room.SidePosition sidePosition, double doorPosition) {
+        if(!room.color.equals(new Color(255, 0, 0, 90)) && !room.color.equals(new Color(0, 255, 0, 90)))
+            return true;
+        double checkX = room.x;
+        double checkY = room.y;
+        double checkWidth = room.width;
+        double checkHeight = room.height;
+
+        // Adjust bounds to find adjacent room based on side
+        switch (sidePosition.side) {
+            case LEFT:
+                checkX -= gridSize; // Check the left side
+                checkY += doorPosition;
+                break;
+            case RIGHT:
+                checkX += room.width; // Check the right side
+                checkY += doorPosition;
+                break;
+            case TOP:
+                checkY -= gridSize; // Check the top side
+                checkX += doorPosition;
+                break;
+            case BOTTOM:
+                checkY += room.height; // Check the bottom side
+                checkX += doorPosition;
+                break;
+            default:
+                return false;
+        }
+
+        // Check if any room contains this adjacent position
+        Point2D adjacentPoint = new Point2D.Double(checkX, checkY);
+        for (Room otherRoom : rooms) {
+            if (otherRoom != room && otherRoom.contains(adjacentPoint)) {
+                return true; // Found an adjacent room
+            }
+        }
+
+        return false; // No adjacent room found
     }
 }
