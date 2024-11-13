@@ -197,10 +197,31 @@ public class Canvas<T> extends JComponent {
 
         @Override
         public void mouseReleased(MouseEvent e) {
+            Point2D point = new Point2D.Double();
+            point.setLocation(selectedFurniture.x, selectedFurniture.y);
             if (selectedFurniture != null) {
-                selectedFurniture.x = snapToGrid((int)selectedFurniture.x);
-                selectedFurniture.y = snapToGrid((int)selectedFurniture.y);
-                if (FurnitureOverlapHandler.isOverlap(selectedFurniture, furnitureItems)) {
+                if(find(point)!=null) {
+                    selectedFurniture.x = snapToGrid((int) selectedFurniture.x);
+                    selectedFurniture.y = snapToGrid((int) selectedFurniture.y);
+                    if (FurnitureOverlapHandler.isOverlap(selectedFurniture, furnitureItems)) {
+                        selectedFurniture.x = originalFurniturePosition.x;
+                        selectedFurniture.y = originalFurniturePosition.y;
+                        String str = Util.getAbsolutePath("assets/images/logo.png");
+                        ImageIcon logo = new ImageIcon(str);
+                        Image resizedImage = logo.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
+                        ImageIcon resizedIcon = new ImageIcon(resizedImage);
+                        JOptionPane.showMessageDialog(
+                                Canvas.this,
+                                "Furniture cannot overlap.",
+                                "Overlap Detected",
+                                JOptionPane.ERROR_MESSAGE,
+                                resizedIcon
+                        );
+                    }
+                    selectedFurniture = null;
+                    dragStart = null;
+                    repaint();
+                } else {
                     selectedFurniture.x = originalFurniturePosition.x;
                     selectedFurniture.y = originalFurniturePosition.y;
                     String str = Util.getAbsolutePath("assets/images/logo.png");
@@ -209,15 +230,12 @@ public class Canvas<T> extends JComponent {
                     ImageIcon resizedIcon = new ImageIcon(resizedImage);
                     JOptionPane.showMessageDialog(
                             Canvas.this,
-                            "Furniture cannot overlap.",
-                            "Overlap Detected",
+                            "Furniture should be in a room.",
+                            "Invalid Placement",
                             JOptionPane.ERROR_MESSAGE,
                             resizedIcon
                     );
                 }
-                selectedFurniture = null;
-                dragStart = null;
-                repaint();
             }
         }
         private boolean isFurnitureSelected() {
