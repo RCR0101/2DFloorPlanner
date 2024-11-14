@@ -73,4 +73,8 @@ public class OuterFrame {
             }
         }
     }
+
+    public FileManager getFileManager() {
+        return fileManager;
+    }
 }

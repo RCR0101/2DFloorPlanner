@@ -88,21 +88,21 @@ public class CommandPanel {
         insertPanel.setBackground(new Color(0, 0, 0));
 
         insertPanel.add(createTitle("Rooms"));
-        insertPanel.add(createButton("Bedroom", Room.bedroom));
+        insertPanel.add(createButton("Bedroom", RoomList.bedroom));
         insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
-        insertPanel.add(createButton("Bathroom", Room.bathroom));
+        insertPanel.add(createButton("Bathroom", RoomList.bathroom));
         insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
-        insertPanel.add(createButton("Living Room", Room.living));
+        insertPanel.add(createButton("Living Room", RoomList.living));
         insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
-        insertPanel.add(createButton("Kitchen", Room.kit));
+        insertPanel.add(createButton("Kitchen", RoomList.kit));
 
         insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
         insertPanel.add(createTitle("Furniture"));
-        insertPanel.add(createButton("Door", Furniture.door));
+        insertPanel.add(createButton("Door", FurnitureList.door));
         insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
-        insertPanel.add(createButton("Sofa", Furniture.sofa));
+        insertPanel.add(createButton("Sofa", FurnitureList.sofa));
         insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
-        insertPanel.add(createButton("Table & Chairs", Furniture.tc));
+        insertPanel.add(createButton("Table & Chairs", FurnitureList.tc));
 
         insertPanel.add(Box.createRigidArea(new Dimension(0,20)));
         insertPanel.add(createButton("Relative Alignment", Edit.RelAlg));

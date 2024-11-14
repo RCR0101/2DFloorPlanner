@@ -3,7 +3,7 @@ package com.example.canvas;
 import javax.swing.*;
 import com.example.models.Room;
 import com.example.services.FileManager;
-import models.Furniture;
+import com.example.models.Furniture;
 import com.example.services.SaveChange ;
 import java.awt.*;
 import java.awt.event.*;

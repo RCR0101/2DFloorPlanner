@@ -1,6 +1,5 @@
 package com.example.models;
 
-import models.Furniture;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
