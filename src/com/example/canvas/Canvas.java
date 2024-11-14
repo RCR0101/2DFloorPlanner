@@ -1,28 +1,40 @@
 package com.example.canvas;
 
 import javax.swing.*;
+
+import com.example.models.Furniture;
+import com.example.models.Opening;
 import com.example.models.Room;
+import com.example.panels.FurnitureList;
 import com.example.services.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 public class Canvas<T> extends JComponent {
     public boolean customRoom = false;
     public ArrayList<Room> rooms = new ArrayList<>(100);
     public ArrayList<ArrayList<Room>> allRooms = new ArrayList<>(100);
+    public List<Furniture> furnitureItems = new ArrayList<>(100);
     public Room currentRoom = null;
     public T fixture = null;
     public boolean defaultRoom = false;
     private final int gridSize;
     public int changeLog = 0;
+    private Furniture selectedFurniture = null;
+    private Point2D dragStart = null;
+    public ArrayList<CanvasState> allStates = new ArrayList<>(100);
 
     public Canvas(int gridSize) {
         this.gridSize = gridSize;
-
+        this.setBackground(Color.WHITE);
+        this.setOpaque(true);
         addMouseMotionListener(new Drag());
         addMouseListener(new Drop());
 
@@ -49,7 +61,6 @@ public class Canvas<T> extends JComponent {
                 FileManager.resetUnsavedChanges();
                 repaint();
             } else {
-                // If no file is selected, initialize rooms to an empty list
                 System.out.println("No file selected. Initializing an empty rooms list.");
                 rooms = new ArrayList<>();
                 roomsLoaded = false;
@@ -69,20 +80,51 @@ public class Canvas<T> extends JComponent {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        g.setColor(Color.GRAY);
 
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        g2d.setColor(new Color(200, 200, 200));
         for (int i = 0; i < getWidth(); i += gridSize) {
-            g.drawLine(i, 0, i, getHeight());
+            g2d.drawLine(i, 0, i, getHeight());
         }
         for (int j = 0; j < getHeight(); j += gridSize) {
-            g.drawLine(0, j, getWidth(), j);
+            g2d.drawLine(0, j, getWidth(), j);
         }
 
+        // Draw rooms with borders
         if (!rooms.isEmpty()) {
-            for (Room rect : rooms) {
-                g.setColor(rect.color);
-                Graphics2D g2d = (Graphics2D) g;
-                g2d.fill(new Rectangle2D.Double(rect.x, rect.y, rect.width, rect.height));
+            for (Room room : rooms) {
+                g2d.setColor(room.color);
+                g2d.fill(new Rectangle2D.Double(room.x, room.y, room.width, room.height));
+                drawRoomBorderWithOpenings(g2d, room);
+            }
+        }
+        if (!furnitureItems.isEmpty()) {
+            for (Furniture furniture : furnitureItems) {
+                AffineTransform originalTransform = g2d.getTransform();
+
+                // Calculate the center of the furniture
+                double centerX = furniture.x + furniture.width / 2;
+                double centerY = furniture.y + furniture.height / 2;
+
+                // Apply rotation around the center of the furniture
+                AffineTransform rotation = AffineTransform.getRotateInstance(
+                        Math.toRadians(furniture.getRotationAngle()), centerX, centerY);
+                g2d.transform(rotation);
+
+                // Draw the image
+                g2d.drawImage(
+                        furniture.image,
+                        (int) furniture.x,
+                        (int) furniture.y,
+                        (int) furniture.width,
+                        (int) furniture.height,
+                        null
+                );
+
+                // Reset the transform to avoid affecting other drawings
+                g2d.setTransform(originalTransform);
             }
         }
     }
@@ -113,41 +155,255 @@ public class Canvas<T> extends JComponent {
     }
 
     private class Drop extends MouseAdapter {
+        private Point2D.Double originalFurniturePosition = new Point2D.Double();
         public void mouseClicked(MouseEvent e) {
-            if(e.getClickCount() > 1 && currentRoom == null) {
-                if(find(e.getPoint()) == null) {
-                    System.out.println("Room not found");
-                } else {
-                    currentRoom = find(e.getPoint());
+            Point2D point = e.getPoint();
+            Furniture clickedFurniture = findFurnitureAtPoint(point);
+            if (SwingUtilities.isLeftMouseButton(e)) {
+                if (isFixtureOpening()) {
+                    handleOpeningPlacement(point);
+                } else if (isFurnitureSelected() && find(point)!=null) {
+                    System.err.println(fixture);
+                    handleFurnitureDrop(point, fixture);
+                } else if (e.getClickCount() > 1 && currentRoom == null && !isFurnitureSelected()) {
+                    handleDoubleClick(point);
+                } else if (customRoom && currentRoom != null && !isFurnitureSelected()) {
+                    handleCustomRoomClick();
+                } else if (currentRoom == null && !isFurnitureSelected()) {
+                    handleRoomCreation(e);
+                } else if (e.getClickCount() == 1 && !customRoom && !isFurnitureSelected()) {
+                    handleRoomClick();
+                }
+            } else if(SwingUtilities.isRightMouseButton(e)){
+                if(clickedFurniture != null){
+                    handleFurnitureRotation(clickedFurniture);
                 }
             }
-
-            if(customRoom && currentRoom != null && SwingUtilities.isLeftMouseButton(e)) {
-                System.out.println("You clicked on a custom room");
-                SaveChange.saveChanges(Canvas.this);
-                repaint();
-            }
-
-            if(SwingUtilities.isLeftMouseButton(e) && currentRoom == null) {
-                if(fixture == null) {
-                    currentRoom = new Room(snapToGrid(e.getX()), snapToGrid(e.getY()), 0, 0,
-                            new Color(25, 54, 68, 64));
-                } else {
-                    currentRoom = new Room(snapToGrid(e.getX()), snapToGrid(e.getY()), 160, 160, getColor(fixture));
+        }
+        @Override
+        public void mousePressed(MouseEvent e) {
+            Point2D point = e.getPoint();
+            if (SwingUtilities.isLeftMouseButton(e)) {
+                selectedFurniture = findFurnitureAtPoint(point);
+                if (selectedFurniture != null) {
+                    dragStart = point;
+                    originalFurniturePosition.x = selectedFurniture.x;
+                    originalFurniturePosition.y = selectedFurniture.y;
                 }
-                rooms.add(currentRoom);
-                repaint();
             }
+            saveCurrentState();
+        }
 
-            if(SwingUtilities.isLeftMouseButton(e) && currentRoom != null && e.getClickCount() == 1 && !customRoom) {
-                System.out.println("You clicked on a non-custom room");
-                SaveChange.saveChanges(Canvas.this);
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            Point2D point = new Point2D.Double();
+            if (selectedFurniture != null) {
+                point.setLocation(selectedFurniture.x, selectedFurniture.y);
+                if(find(point)!=null) {
+                    selectedFurniture.x = snapToGrid((int) selectedFurniture.x);
+                    selectedFurniture.y = snapToGrid((int) selectedFurniture.y);
+                    if (FurnitureOverlapHandler.isOverlap(selectedFurniture, furnitureItems)) {
+                        selectedFurniture.x = originalFurniturePosition.x;
+                        selectedFurniture.y = originalFurniturePosition.y;
+                        String str = Util.getAbsolutePath("assets/images/logo.png");
+                        ImageIcon logo = new ImageIcon(str);
+                        Image resizedImage = logo.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
+                        ImageIcon resizedIcon = new ImageIcon(resizedImage);
+                        JOptionPane.showMessageDialog(
+                                Canvas.this,
+                                "Furniture cannot overlap.",
+                                "Overlap Detected",
+                                JOptionPane.ERROR_MESSAGE,
+                                resizedIcon
+                        );
+                    }
+                } else {
+                    selectedFurniture.x = originalFurniturePosition.x;
+                    selectedFurniture.y = originalFurniturePosition.y;
+                    String str = Util.getAbsolutePath("assets/images/logo.png");
+                    ImageIcon logo = new ImageIcon(str);
+                    Image resizedImage = logo.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
+                    ImageIcon resizedIcon = new ImageIcon(resizedImage);
+                    JOptionPane.showMessageDialog(
+                            Canvas.this,
+                            "Furniture should be in a room.",
+                            "Invalid Placement",
+                            JOptionPane.ERROR_MESSAGE,
+                            resizedIcon
+                    );
+                }
+                selectedFurniture = null;
+                dragStart = null;
+                saveCurrentState();
                 repaint();
             }
         }
-    }
+        private boolean isFurnitureSelected() {
+            return fixture instanceof FurnitureList;
+        }
+        private void handleFurnitureRotation(Furniture furniture) {
+            furniture.rotate(); // Rotate the furniture by 90 degrees
+            repaint();          // Redraw the canvas to reflect changes
+        }
+        private void handleFurnitureDrop(Point2D point, T fixture) {
+            int x = snapToGrid((int) point.getX());
+            int y = snapToGrid((int) point.getY());
 
+            String imagePath = getFurnitureImage(fixture);
+            addFurniture(x, y, imagePath);
+            saveCurrentState();
+            selectedFurniture = null;
+            dragStart = null;
+            repaint();
+        }
+
+        private boolean isFixtureOpening() {
+            return fixture != null && (fixture.toString().equals("door") || fixture.toString().equals("window"));
+        }
+
+        private String getFurnitureImage(T fixture) {
+                return fixture != null ? Util.getAbsolutePath("assets/images/furniture/" + fixture + ".png") : null;
+        }
+        private void handleOpeningPlacement(Point2D point) {
+            Room room = find(point);
+            List<Opening> existingOpenings = new ArrayList<>();
+            if (room != null) {
+                Room.SidePosition sidePosition = room.getSideAtPoint(point);
+                if (sidePosition != null) {
+                    Opening.Type openingType = fixture.toString().equals("door") ? Opening.Type.DOOR : Opening.Type.WINDOW;
+                    double openingLength = 50.0;
+                    double snappedPosition = snapToGrid((int) sidePosition.position);
+                    if(room.openings != null) {
+                        existingOpenings = room.openings.stream()
+                                .filter(o -> o.side == sidePosition.side)
+                                .toList();
+                    }
+
+                    boolean overlapDetected = false;
+                    for (Opening existingOpening : existingOpenings) {
+                        double existingStart = existingOpening.position;
+                        double existingEnd = existingOpening.position + existingOpening.length;
+
+                        double newStart = snappedPosition;
+                        double newEnd = snappedPosition + openingLength;
+
+                        if (newStart < existingEnd && newEnd > existingStart) {
+                            // Overlap detected
+                            overlapDetected = true;
+                            break;
+                        }
+                    }
+
+                    if (overlapDetected) {
+                        JOptionPane.showMessageDialog(
+                                null,
+                                "Overlap detected! Openings cannot overlap.",
+                                "Overlap",
+                                JOptionPane.ERROR_MESSAGE
+                        );
+                        return;
+                    }
+
+                    if (openingType == Opening.Type.DOOR) {
+                        if (!isAdjacentToRoom(room, sidePosition, snappedPosition, true)) {
+                            JOptionPane.showMessageDialog(
+                                    null,
+                                    "Invalid door placement! Doors must lead to another room.",
+                                    "Placement Error",
+                                    JOptionPane.ERROR_MESSAGE
+                            );
+                            return; // Cancel door placement
+                        }
+                    } else {
+                        if (isAdjacentToRoom(room, sidePosition, snappedPosition, false)) {
+                            JOptionPane.showMessageDialog(
+                                    null,
+                                    "Invalid window placement! Windows cannot be between rooms.",
+                                    "Placement Error",
+                                    JOptionPane.ERROR_MESSAGE
+                            );
+                            return;
+                        }
+                    }
+                    Opening opening = new Opening(openingType, sidePosition.side, snappedPosition, openingLength);
+                    room.addOpening(opening);
+                    saveCurrentState();
+                    // Repaint to reflect changes
+                    repaint();
+                }
+            }
+        }
+
+        private void handleDoubleClick(Point2D point) {
+            currentRoom = find(point);
+            if (currentRoom == null) {
+                System.out.println("Room not found");
+            }
+        }
+
+        private void handleCustomRoomClick() {
+            System.out.println("You clicked on a custom room");
+            SaveChange.saveChanges(Canvas.this);
+            repaint();
+        }
+
+        private void handleRoomCreation(MouseEvent e) {
+            int x = snapToGrid(e.getX());
+            int y = snapToGrid(e.getY());
+
+            if (fixture == null) {
+                currentRoom = new Room(x, y, 0, 0, new Color(25, 54, 68, 64));
+            } else {
+                currentRoom = new Room(x, y, 160, 160, getColor(fixture));
+            }
+
+            rooms.add(currentRoom);
+            saveCurrentState();
+            repaint();
+        }
+
+        private void handleRoomClick() {
+            System.out.println("You clicked on a non-custom room");
+            SaveChange.saveChanges(Canvas.this);
+            repaint();
+        }
+    }
+    private Furniture findFurnitureAtPoint(Point2D point) {
+        for (Furniture furniture : furnitureItems) {
+            Rectangle2D bounds = new Rectangle2D.Double(furniture.x, furniture.y, furniture.width, furniture.height);
+
+        AffineTransform transform = AffineTransform.getRotateInstance(
+                    Math.toRadians(furniture.getRotationAngle()),
+                    furniture.x + furniture.width / 2,
+                    furniture.y + furniture.height / 2
+            );
+
+            Shape rotatedBounds = transform.createTransformedShape(bounds);
+
+            if (rotatedBounds.contains(point)) {
+                return furniture;
+            }
+        }
+        return null; // No furniture found at the clicked point
+    }
     private class Drag extends MouseMotionAdapter {
+        @Override
+        public void mouseDragged(MouseEvent e) {
+            if (selectedFurniture != null && dragStart != null) {
+                // Calculate the movement delta
+                double dx = e.getX() - dragStart.getX();
+                double dy = e.getY() - dragStart.getY();
+
+                // Update furniture position
+                selectedFurniture.x += dx;
+                selectedFurniture.y += dy;
+
+                // Update drag start point
+                dragStart = e.getPoint();
+
+                repaint();
+            }
+        }
         public void mouseMoved(MouseEvent e) {
             if(currentRoom != null && !customRoom) {
                 currentRoom.x = snapToGrid(e.getX());
@@ -200,9 +456,181 @@ public class Canvas<T> extends JComponent {
         }
 
         rooms.clear();
+        furnitureItems.clear();
+        saveCurrentState();
         int clickX = -1;
         int clickY = -1;
         FileManager.resetUnsavedChanges(); // Reset unsaved changes after clearing
         repaint();
+    }
+
+    private void drawRoomBorderWithOpenings(Graphics2D g2d, Room room) {
+        for (Opening.Side side : Opening.Side.values()) {
+            drawSideWithOpenings(g2d, room, side);
+        }
+    }
+
+    private void drawSideWithOpenings(Graphics2D g2d, Room room, Opening.Side side) {
+        double x1, y1, x2, y2;
+        double sideLength;
+        List<Opening> sideOpenings = new ArrayList<>();
+
+        // Determine side coordinates and length
+        switch (side) {
+            case TOP:
+                x1 = room.x;
+                y1 = room.y;
+                x2 = room.x + room.width;
+                y2 = room.y;
+                sideLength = room.width;
+                break;
+            case BOTTOM:
+                x1 = room.x;
+                y1 = room.y + room.height;
+                x2 = room.x + room.width;
+                y2 = room.y + room.height;
+                sideLength = room.width;
+                break;
+            case LEFT:
+                x1 = room.x;
+                y1 = room.y;
+                x2 = room.x;
+                y2 = room.y + room.height;
+                sideLength = room.height;
+                break;
+            case RIGHT:
+                x1 = room.x + room.width;
+                y1 = room.y;
+                x2 = room.x + room.width;
+                y2 = room.y + room.height;
+                sideLength = room.height;
+                break;
+            default:
+                return;
+        }
+        if(room.openings != null) {
+            sideOpenings = room.openings.stream()
+                    .filter(o -> o.side == side)
+                    .sorted(Comparator.comparingDouble(o -> o.position))
+                    .toList();
+        }
+
+        // Draw the side with adjustments for openings
+        double currentPosition = 0.0;
+        for (Opening opening : sideOpenings) {
+            if (currentPosition < opening.position) {
+                drawLineSegment(g2d, room, side, currentPosition, opening.position, "SOLID");
+            }
+            if (opening.type == Opening.Type.WINDOW) {
+                drawLineSegment(g2d, room, side, opening.position, opening.position + opening.length, "DOTTED");
+            }
+            currentPosition = opening.position + opening.length;
+        }
+        if (currentPosition < sideLength) {
+            drawLineSegment(g2d, room, side, currentPosition, sideLength, "SOLID");
+        }
+    }
+
+    private void drawLineSegment(Graphics2D g2d, Room room, Opening.Side side, double startPos, double endPos, String style) {
+        double xStart = 0, yStart = 0, xEnd = 0, yEnd = 0;
+        switch (side) {
+            case TOP:
+                xStart = room.x + startPos;
+                yStart = room.y;
+                xEnd = room.x + endPos;
+                yEnd = room.y;
+                break;
+            case BOTTOM:
+                xStart = room.x + startPos;
+                yStart = room.y + room.height;
+                xEnd = room.x + endPos;
+                yEnd = room.y + room.height;
+                break;
+            case LEFT:
+                xStart = room.x;
+                yStart = room.y + startPos;
+                xEnd = room.x;
+                yEnd = room.y + endPos;
+                break;
+            case RIGHT:
+                xStart = room.x + room.width;
+                yStart = room.y + startPos;
+                xEnd = room.x + room.width;
+                yEnd = room.y + endPos;
+                break;
+        }
+        if ("SOLID".equals(style)) {
+            g2d.setStroke(new BasicStroke(2));
+        } else if ("DOTTED".equals(style)) {
+            float[] dashPattern = {5, 5};
+            g2d.setStroke(new BasicStroke(2, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER,
+                    10, dashPattern, 0));
+        }
+
+        // Draw the line segment
+        g2d.drawLine((int) xStart, (int) yStart, (int) xEnd, (int) yEnd);
+    }
+
+    public void addFurniture(double x, double y, String imagePath) {
+        Furniture furniture = new Furniture(x, y, imagePath);
+        furnitureItems.add(furniture);
+        repaint();
+    }
+
+    public void saveCurrentState() {
+        List<Room> roomsCopy = new ArrayList<>();
+        for (Room room : rooms) {
+            roomsCopy.add(Room.getCopy(room));
+        }
+
+        List<Furniture> furnitureCopy = new ArrayList<>();
+        for (Furniture furniture : furnitureItems) {
+            furnitureCopy.add(Furniture.getCopy(furniture));
+        }
+
+        // Save the new state
+        allStates.add(new CanvasState(roomsCopy, furnitureCopy));
+        changeLog = allStates.size() - 1;  // Update the change log index
+    }
+
+    private boolean isAdjacentToRoom(Room room, Room.SidePosition sidePosition, double doorPosition, boolean isDoor) {
+        if(!room.color.equals(new Color(255, 0, 0, 90)) && !room.color.equals(new Color(0, 255, 0, 90)) && isDoor)
+            return true;
+        double checkX = room.x;
+        double checkY = room.y;
+        double checkWidth = room.width;
+        double checkHeight = room.height;
+
+        // Adjust bounds to find adjacent room based on side
+        switch (sidePosition.side) {
+            case LEFT:
+                checkX -= gridSize; // Check the left side
+                checkY += doorPosition;
+                break;
+            case RIGHT:
+                checkX += room.width; // Check the right side
+                checkY += doorPosition;
+                break;
+            case TOP:
+                checkY -= gridSize; // Check the top side
+                checkX += doorPosition;
+                break;
+            case BOTTOM:
+                checkY += room.height; // Check the bottom side
+                checkX += doorPosition;
+                break;
+            default:
+                return false;
+        }
+
+        // Check if any room contains this adjacent position
+        Point2D adjacentPoint = new Point2D.Double(checkX, checkY);
+        for (Room otherRoom : rooms) {
+            if (otherRoom != room && otherRoom.contains(adjacentPoint)) {
+                return true; // Found an adjacent room
+            }
+        }
+
+        return false; // No adjacent room found
     }
 }

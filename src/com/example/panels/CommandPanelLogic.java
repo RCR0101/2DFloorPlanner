@@ -7,8 +7,8 @@ enum Room {
     bedroom, bathroom, living, kit
 }
 
-enum Furniture {
-    closet, lamp, bed, door, sofa, tc
+enum WallFurniture {
+    door, window
 }
 public class CommandPanelLogic {
     private Canvas canvas;
@@ -19,7 +19,7 @@ public class CommandPanelLogic {
 
     public void handleInsertButtonAction(JPanel cardPanel, CardLayout cardLayout) {
         canvas.customRoom = true;
-        canvas.currentRoom = null; // Reset any current room being edited
+        canvas.currentRoom = null;
         cardLayout.show(cardPanel, "Insert");
         System.out.println("Custom room mode activated.");
     }
@@ -27,7 +27,6 @@ public class CommandPanelLogic {
     public void createInsertPanel(JPanel cardPanel) {
         JPanel insertPanel = new JPanel();
         insertPanel.setLayout(new BoxLayout(insertPanel, BoxLayout.Y_AXIS));
-        insertPanel.setBackground(new Color(0, 0, 0));
 
         insertPanel.add(createTitle("Rooms"));
         insertPanel.add(createButton("Bedroom", Room.bedroom));
@@ -40,30 +39,65 @@ public class CommandPanelLogic {
 
         insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
         insertPanel.add(createTitle("Furniture"));
-        insertPanel.add(createButton("Door", Furniture.door));
+        insertPanel.add(createButton("Door", WallFurniture.door));
         insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
-        insertPanel.add(createButton("Sofa", Furniture.sofa));
+        insertPanel.add(createButton("Window", WallFurniture.window));
         insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
-        insertPanel.add(createButton("Table & Chairs", Furniture.tc));
+        insertPanel.add(createButton("Queen Bed", FurnitureList.qBed));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        insertPanel.add(createButton("Sofa", FurnitureList.sofa));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        insertPanel.add(createButton("Dining Table", FurnitureList.dTable));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        insertPanel.add(createButton("TV Table", FurnitureList.tvTable));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        insertPanel.add(createButton("Toilet", FurnitureList.toilet));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        insertPanel.add(createButton("Single Sofa", FurnitureList.sSofa));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        insertPanel.add(createButton("King Bed", FurnitureList.kBed));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        insertPanel.add(createButton("Study Desk", FurnitureList.sDesk));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        insertPanel.add(createButton("Sink", FurnitureList.sink));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        insertPanel.add(createButton("Snack Table", FurnitureList.snTable));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        insertPanel.add(createButton("Cot", FurnitureList.cot));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        insertPanel.add(createButton("Drawer", FurnitureList.drawer));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        insertPanel.add(createButton("Bedroom Drawer", FurnitureList.bDrawer));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        insertPanel.add(createButton("Glass Table", FurnitureList.gTable));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        insertPanel.add(createButton("L-shaped Sofa", FurnitureList.lSofa));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        insertPanel.add(createButton("Bathtub", FurnitureList.bTub));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        insertPanel.add(createButton("Kitchen Sink", FurnitureList.kSink));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        insertPanel.add(createButton("Stove", FurnitureList.stove));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        insertPanel.add(createButton("Shower", FurnitureList.shower));
+        insertPanel.add(Box.createRigidArea(new Dimension(0, 40)));
 
         cardPanel.add(insertPanel, "Insert");
     }
 
-    public void createPropertiesPanel(JPanel cardPanel) {
-        JPanel propertiesPanel = new JPanel();
-        propertiesPanel.setLayout(new BoxLayout(propertiesPanel, BoxLayout.Y_AXIS));
-        propertiesPanel.setBackground(new Color(0, 0, 0));
+    public void createAlignmentPanel(JPanel cardPanel) {
+        JPanel alignmentPanel = new JPanel();
+        alignmentPanel.setLayout(new BoxLayout(alignmentPanel, BoxLayout.Y_AXIS));
 
         JTextArea notice = new JTextArea("Click a room or furniture to modify its properties");
-        notice.setBackground(new Color(0, 0, 0));
         notice.setLineWrap(true);
         notice.setAlignmentX(Component.CENTER_ALIGNMENT);
         notice.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         notice.setForeground(new Color(200, 200, 200));
         notice.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
-        propertiesPanel.add(notice);
+        alignmentPanel.add(notice);
 
-        cardPanel.add(propertiesPanel, "Properties");
+        cardPanel.add(alignmentPanel, "Relative Alignment");
     }
 
     public JLabel createTitle(String title) {
@@ -90,7 +124,7 @@ public class CommandPanelLogic {
                 JButton button1 = (JButton) e.getSource();
                 if (button1.getText().equals("Insert")) {
                     canvas.customRoom = true;
-                } else {
+                } else if(!(fixture instanceof FurnitureList)) {
                     canvas.defaultRoom = true;
                 }
             }

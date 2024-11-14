@@ -1,5 +1,6 @@
 package com.example.menubar;
 
+import com.example.canvas.CanvasState;
 import com.example.frames.OuterFrame;
 import com.example.canvas.Canvas;
 import com.example.models.Room;
@@ -21,15 +22,19 @@ public class UndoActionListener extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        CustomMenuBarLogic.maxChangeLog = max(CustomMenuBarLogic.maxChangeLog, canvas.changeLog);
         if (canvas.changeLog > 0) {
+            // Move back in the changelog
+            CanvasState previousState = (CanvasState) canvas.allStates.get(--canvas.changeLog);
+
+            // Restore rooms and furniture
             canvas.rooms.clear();
-            for (Object room : (ArrayList) canvas.allRooms.get(--canvas.changeLog)) {
-                canvas.rooms.add(Room.getCopy((Room) room));
-            }
-            System.out.println("Undo: reverted to changeLog " + canvas.changeLog);
-            canvas.fixture = null;
+            canvas.rooms.addAll(previousState.getRooms());
+
+            canvas.furnitureItems.clear();
+            canvas.furnitureItems.addAll(previousState.getFurnitureItems());
+
             canvas.repaint();
+            System.out.println("Undo: moved back to changeLog " + canvas.changeLog);
         }
     }
 }

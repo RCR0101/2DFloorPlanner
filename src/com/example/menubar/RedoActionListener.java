@@ -1,5 +1,6 @@
 package com.example.menubar;
 
+import com.example.canvas.CanvasState;
 import com.example.frames.OuterFrame;
 import com.example.canvas.Canvas;
 import com.example.models.Room;
@@ -19,14 +20,18 @@ public class RedoActionListener extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (canvas.changeLog < CustomMenuBarLogic.maxChangeLog) {
+        if (canvas.changeLog < Math.min(CustomMenuBarLogic.maxChangeLog, canvas.allStates.size())) {
+            CanvasState newState = (CanvasState) canvas.allStates.get(++canvas.changeLog);
+
+            // Restore rooms and furniture
             canvas.rooms.clear();
-            for (Object room : (ArrayList) canvas.allRooms.get(++canvas.changeLog)) {
-                canvas.rooms.add(Room.getCopy((Room) room));
-            }
-            System.out.println("Redo: moved forward to changeLog " + canvas.changeLog);
-            canvas.fixture = null;
+            canvas.rooms.addAll(newState.getRooms());
+
+            canvas.furnitureItems.clear();
+            canvas.furnitureItems.addAll(newState.getFurnitureItems());
+
             canvas.repaint();
+            System.out.println("Redo: moved forward to changeLog " + canvas.changeLog);
         }
     }
 }
