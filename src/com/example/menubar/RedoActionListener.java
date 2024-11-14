@@ -12,14 +12,14 @@ public class RedoActionListener extends AbstractAction {
     private OuterFrame frame;
     private Canvas canvas;
 
-    public RedoActionListener(OuterFrame frame) {
+    RedoActionListener(OuterFrame frame) {
         this.frame = frame;
-        this.canvas = OuterFrame.canvas;
+        this.canvas = frame.canvas;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (canvas.changeLog < CustomMenuBarLogic.maxChangeLog) {
+        if (canvas.changeLog < CustomMenuBar.maxChangeLog) {
             canvas.rooms.clear();
             for (Object room : (ArrayList) canvas.allRooms.get(++canvas.changeLog)) {
                 canvas.rooms.add(Room.getCopy((Room) room));

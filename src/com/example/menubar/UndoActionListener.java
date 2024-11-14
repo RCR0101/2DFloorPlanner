@@ -14,14 +14,14 @@ public class UndoActionListener extends AbstractAction {
     private OuterFrame frame;
     private Canvas canvas;
 
-    public UndoActionListener(OuterFrame frame) {
+    UndoActionListener(OuterFrame frame) {
         this.frame = frame;
-        this.canvas = OuterFrame.canvas;
+        this.canvas = frame.canvas;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        CustomMenuBarLogic.maxChangeLog = max(CustomMenuBarLogic.maxChangeLog, canvas.changeLog);
+        CustomMenuBar.maxChangeLog = max(CustomMenuBar.maxChangeLog, canvas.changeLog);
         if (canvas.changeLog > 0) {
             canvas.rooms.clear();
             for (Object room : (ArrayList) canvas.allRooms.get(--canvas.changeLog)) {

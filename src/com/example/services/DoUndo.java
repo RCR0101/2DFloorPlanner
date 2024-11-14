@@ -10,7 +10,7 @@ import static java.lang.Math.max;
 
 public class DoUndo {
     static int maxChangeLog = 0 ;
-    public static void doUndo(Canvas canvas) throws IOException, ClassNotFoundException {
+    public static void doundo(Canvas canvas) throws IOException, ClassNotFoundException {
         maxChangeLog = max(maxChangeLog,canvas.changeLog);
         if (canvas.changeLog > 0) {
 

@@ -1,9 +1,12 @@
 package com.example.models;
 
+import models.Furniture;
+
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Objects;
 
 public class Room implements Serializable {
@@ -12,6 +15,7 @@ public class Room implements Serializable {
     public double width;
     public double height;
     public Color color;
+    public ArrayList<Furniture> furnitures;
     public Room(int x, int y, int width, int height, Color color){
         this.x = x;
         this.y = y;
@@ -35,12 +39,22 @@ public class Room implements Serializable {
     }
     public boolean contains(Point2D p){
 
-        return p.getX() > x && p.getX() < x + width && p.getY() > y && p.getY() < y + height;
+        if(p.getX() > x && p.getX() < x + width && p.getY() > y && p.getY() < y + height){
+            return true;
+        }
+        return false;
     }
     public boolean intersects(Room room){
         Rectangle2D rect = new Rectangle2D.Double(x,y,width,height);
         Rectangle2D rect2 = new Rectangle2D.Double(room.x,room.y,room.width,room.height);
         return rect.intersects(rect2);
+    }
+    public boolean contains(Furniture furniture){
+        if(furniture.x >= x  && furniture.y <= y &&
+           furniture.x + furniture.width <= x+ width && furniture.y + furniture.height <= y+height ){
+            return true;
+        }
+        return false;
     }
     @Override
     public boolean equals(Object o){
@@ -49,7 +63,10 @@ public class Room implements Serializable {
         }
         if(o == null) return false ;
         Room room = (Room) o;
-        return room.x == x && room.y == y && room.width == width && room.height == height && room.color == color;
+        if(room.x == x && room.y == y && room.width == width && room.height == height && room.color == color){
+            return true;
+        }
+        return false;
     }
     @Override
     public int hashCode(){

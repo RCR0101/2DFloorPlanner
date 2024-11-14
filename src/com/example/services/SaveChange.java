@@ -11,6 +11,7 @@ import com.example.models.Room;
 import javax.swing.*;
 
 public class SaveChange {
+
         public static boolean isIntersection(Canvas canvas){
             if(canvas == null) return false;
             if(canvas.currentRoom == null) return false;
@@ -43,6 +44,8 @@ public class SaveChange {
                 canvas.currentRoom = null;
                 canvas.customRoom = false;
                 canvas.defaultRoom = false;
+                canvas.room1 = null ;
+                canvas.room2 = null ;
             }
             else
             {

@@ -2,7 +2,9 @@ package com.example.canvas;
 
 import javax.swing.*;
 import com.example.models.Room;
-import com.example.services.*;
+import com.example.services.FileManager;
+import models.Furniture;
+import com.example.services.SaveChange ;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Point2D;
@@ -13,13 +15,22 @@ import java.util.ArrayList;
 public class Canvas<T> extends JComponent {
     public boolean customRoom = false;
     public ArrayList<Room> rooms = new ArrayList<>(100);
+    public ArrayList<Furniture> furs = new ArrayList<>(100);
     public ArrayList<ArrayList<Room>> allRooms = new ArrayList<>(100);
     public Room currentRoom = null;
+    public Furniture currentFurniture = null;
     public T fixture = null;
     public boolean defaultRoom = false;
-    private final int gridSize;
+    public boolean furniture = false;
+    private int gridSize = 50;
+    private boolean roomsLoaded = false;
     public int changeLog = 0;
-
+    public Room roomContainingFurniture = null;
+    private int clickX = -1, clickY = -1;
+    public double iniX =  0;
+    public double iniY =  0;
+    public boolean relativeAlignment = false ;
+    public Room room1 = null, room2= null;
     public Canvas(int gridSize) {
         this.gridSize = gridSize;
 
@@ -34,7 +45,6 @@ public class Canvas<T> extends JComponent {
 
     public void loadRoomsFromFile() {
         FileManager fileManager = new FileManager();
-        boolean roomsLoaded = false;
         try {
             String filePath = fileManager.openFileChooser();
             if (filePath != null) {
@@ -45,9 +55,10 @@ public class Canvas<T> extends JComponent {
                 }
                 allRooms.add(clone);
 
+                // Update state
                 roomsLoaded = true;
-                FileManager.resetUnsavedChanges();
-                repaint();
+                fileManager.resetUnsavedChanges(); // Reset unsaved changes after loading
+                repaint(); // Repaint the component to reflect the loaded state
             } else {
                 // If no file is selected, initialize rooms to an empty list
                 System.out.println("No file selected. Initializing an empty rooms list.");
@@ -56,7 +67,7 @@ public class Canvas<T> extends JComponent {
             }
         } catch (ClassNotFoundException | IOException e) {
             System.err.println("Failed to load rooms from the file.");
-            System.out.println("Error: " + e.getMessage());
+            e.printStackTrace();
             rooms = new ArrayList<>(); // Fallback to an empty list in case of error
             roomsLoaded = false;
         }
@@ -85,20 +96,34 @@ public class Canvas<T> extends JComponent {
                 g2d.fill(new Rectangle2D.Double(rect.x, rect.y, rect.width, rect.height));
             }
         }
+        if(!furs.isEmpty()){
+            for(Furniture rect : furs){
+                g.setColor(rect.color);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.fill(new Rectangle2D.Double(rect.x, rect.y, rect.width, rect.height));
+            }
+        }
     }
 
     public void setSelectedObject(T fixture) {
         this.fixture = fixture;
     }
-
+    //to implement
+    public int getHeight(T fixture) { return 160;}
+    public int getWidth(T fixture) { return 160;}
     public Color getColor(T fixture) {
-        return switch (fixture.toString()) {
-            case "bedroom" -> new Color(255, 0, 0, 90);
-            case "bathroom" -> new Color(0, 255, 0, 90);
-            case "living" -> new Color(0, 0, 255, 90);
-            case "kit" -> new Color(255, 255, 0, 90);
-            default -> new Color(0, 255, 255, 90);
-        };
+        switch (fixture.toString()) {
+            case "bedroom":
+                return new Color(255, 0, 0, 90);
+            case "bathroom":
+                return new Color(0, 255, 0, 90);
+            case "living":
+                return new Color(0, 0, 255, 90);
+            case "kit":
+                return new Color(255, 255, 0, 90);
+            default:
+                return new Color(0, 255, 255, 90);
+        }
     }
 
     public Room find(Point2D point){
@@ -113,22 +138,48 @@ public class Canvas<T> extends JComponent {
     }
 
     private class Drop extends MouseAdapter {
+        @Override
+        public void mousePressed(MouseEvent e) {
+            if (!customRoom && !defaultRoom ) {
+                System.out.println("140");
+                currentRoom = find(e.getPoint());
+                if (currentRoom != null) {
+                    iniX = currentRoom.x;
+                    iniY = currentRoom.y;
+
+                }
+            }
+        }
+
         public void mouseClicked(MouseEvent e) {
+            if(relativeAlignment){
+                if(room1 == null){
+                    room1 = find(e.getPoint());
+                }else{
+                    room2 = find(e.getPoint());
+                    iniX = room2.x;
+                    iniY = room2.y;
+                }
+
+            }
+            else if(true){
+            /*
             if(e.getClickCount() > 1 && currentRoom == null) {
+
                 if(find(e.getPoint()) == null) {
                     System.out.println("Room not found");
                 } else {
                     currentRoom = find(e.getPoint());
                 }
             }
-
+             */
             if(customRoom && currentRoom != null && SwingUtilities.isLeftMouseButton(e)) {
                 System.out.println("You clicked on a custom room");
                 SaveChange.saveChanges(Canvas.this);
                 repaint();
             }
 
-            if(SwingUtilities.isLeftMouseButton(e) && currentRoom == null) {
+            if(SwingUtilities.isLeftMouseButton(e) && currentRoom == null ) {
                 if(fixture == null) {
                     currentRoom = new Room(snapToGrid(e.getX()), snapToGrid(e.getY()), 0, 0,
                             new Color(25, 54, 68, 64));
@@ -139,17 +190,46 @@ public class Canvas<T> extends JComponent {
                 repaint();
             }
 
-            if(SwingUtilities.isLeftMouseButton(e) && currentRoom != null && e.getClickCount() == 1 && !customRoom) {
+            if(SwingUtilities.isLeftMouseButton(e) && currentRoom != null && e.getClickCount() == 1 && defaultRoom) {
                 System.out.println("You clicked on a non-custom room");
                 SaveChange.saveChanges(Canvas.this);
                 repaint();
             }
         }
+
+           }
+           public void mouseReleased(MouseEvent e) {
+            if ( !customRoom && !defaultRoom &&!relativeAlignment){
+
+                currentRoom.x = snapToGrid(e.getX());
+                currentRoom.y = snapToGrid(e.getY());
+                System.out.println("Line 199");
+                SaveChange.saveChanges(Canvas.this);
+                if(currentRoom != null){
+                    System.out.println("Line 215");
+                    currentRoom.x = iniX ;
+                    currentRoom.y = iniY;
+                    com.example.services.SaveChange.saveChanges(Canvas.this);
+                    repaint() ;
+                }
+                repaint();
+            }
+           }
     }
 
     private class Drag extends MouseMotionAdapter {
+        public void mouseDragged(MouseEvent e){
+            if(currentRoom != null && !customRoom && !relativeAlignment) {
+                currentRoom.x = snapToGrid(e.getX());
+                currentRoom.y = snapToGrid(e.getY());
+                System.out.println(iniX + " " + iniY);
+                repaint();
+            }
+        }
+
         public void mouseMoved(MouseEvent e) {
-            if(currentRoom != null && !customRoom) {
+
+            if(currentRoom != null && !customRoom && !relativeAlignment) {
                 currentRoom.x = snapToGrid(e.getX());
                 currentRoom.y = snapToGrid(e.getY());
             }
@@ -192,16 +272,17 @@ public class Canvas<T> extends JComponent {
                 try {
                     fileManager.saveFile(rooms);
                 } catch (IOException e) {
-                    System.err.println("Error: " + e.getMessage());
+                    e.printStackTrace();
                     System.err.println("Failed to save changes.");
                 }
             }
             // If user chose NO, proceed to reset the canvas
         }
 
+        // Proceed to reset the canvas
         rooms.clear();
-        int clickX = -1;
-        int clickY = -1;
+        clickX = -1;
+        clickY = -1;
         FileManager.resetUnsavedChanges(); // Reset unsaved changes after clearing
         repaint();
     }
