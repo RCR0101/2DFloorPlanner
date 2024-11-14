@@ -1,7 +1,8 @@
 package com.example.menubar;
 
 import javax.swing.*;
-import java.awt.Component;
+import java.awt.*;
+
 import com.example.frames.OuterFrame;
 import com.example.services.Util;
 
@@ -18,7 +19,6 @@ public class CustomMenuBarUI {
         JMenuBar mb = new JMenuBar();
         JMenu file = new JMenu("File");
         JMenu edit = new JMenu("Edit");
-
         // Load icons
         ImageIcon newIcon = Util.resizeImage(new ImageIcon(Util.getAbsolutePath("assets/icons/new.png")));
         ImageIcon openIcon = Util.resizeImage(new ImageIcon(Util.getAbsolutePath("assets/icons/open.png")));
@@ -56,7 +56,6 @@ public class CustomMenuBarUI {
         // Add menus to the menu bar
         mb.add(file);
         mb.add(edit);
-
         return mb;
     }
 }

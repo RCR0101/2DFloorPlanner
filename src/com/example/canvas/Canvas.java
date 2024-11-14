@@ -33,7 +33,8 @@ public class Canvas<T> extends JComponent {
 
     public Canvas(int gridSize) {
         this.gridSize = gridSize;
-
+        this.setBackground(Color.WHITE);
+        this.setOpaque(true);
         addMouseMotionListener(new Drag());
         addMouseListener(new Drop());
 

@@ -19,7 +19,7 @@ public class CommandPanelLogic {
 
     public void handleInsertButtonAction(JPanel cardPanel, CardLayout cardLayout) {
         canvas.customRoom = true;
-        canvas.currentRoom = null; // Reset any current room being edited
+        canvas.currentRoom = null;
         cardLayout.show(cardPanel, "Insert");
         System.out.println("Custom room mode activated.");
     }
@@ -27,7 +27,6 @@ public class CommandPanelLogic {
     public void createInsertPanel(JPanel cardPanel) {
         JPanel insertPanel = new JPanel();
         insertPanel.setLayout(new BoxLayout(insertPanel, BoxLayout.Y_AXIS));
-        insertPanel.setBackground(new Color(0, 0, 0));
 
         insertPanel.add(createTitle("Rooms"));
         insertPanel.add(createButton("Bedroom", Room.bedroom));
@@ -86,21 +85,19 @@ public class CommandPanelLogic {
         cardPanel.add(insertPanel, "Insert");
     }
 
-    public void createPropertiesPanel(JPanel cardPanel) {
-        JPanel propertiesPanel = new JPanel();
-        propertiesPanel.setLayout(new BoxLayout(propertiesPanel, BoxLayout.Y_AXIS));
-        propertiesPanel.setBackground(new Color(0, 0, 0));
+    public void createAlignmentPanel(JPanel cardPanel) {
+        JPanel alignmentPanel = new JPanel();
+        alignmentPanel.setLayout(new BoxLayout(alignmentPanel, BoxLayout.Y_AXIS));
 
         JTextArea notice = new JTextArea("Click a room or furniture to modify its properties");
-        notice.setBackground(new Color(0, 0, 0));
         notice.setLineWrap(true);
         notice.setAlignmentX(Component.CENTER_ALIGNMENT);
         notice.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         notice.setForeground(new Color(200, 200, 200));
         notice.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
-        propertiesPanel.add(notice);
+        alignmentPanel.add(notice);
 
-        cardPanel.add(propertiesPanel, "Properties");
+        cardPanel.add(alignmentPanel, "Relative Alignment");
     }
 
     public JLabel createTitle(String title) {
