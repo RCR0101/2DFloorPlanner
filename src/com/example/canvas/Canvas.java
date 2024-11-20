@@ -681,6 +681,7 @@ public class Canvas<T> extends JComponent {
 
     private void drawLineSegment(Graphics2D g2d, Room room, Opening.Side side, double startPos, double endPos, String style) {
         double xStart = 0, yStart = 0, xEnd = 0, yEnd = 0;
+        g2d.setColor(Color.black);
         switch (side) {
             case TOP:
                 xStart = room.x + startPos;
