@@ -20,4 +20,12 @@ public class Opening implements Serializable {
         this.position = position;
         this.length = length;
     }
+    public static Opening getCopy(Opening originalOpening) {
+        return new Opening(
+                originalOpening.type,
+                originalOpening.side,
+                originalOpening.position,
+                originalOpening.length
+        );
+    }
 }

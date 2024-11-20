@@ -33,8 +33,24 @@ public class Room implements Serializable {
         this.color = color;
     }
     public Room(){}
-    public static  Room getCopy(Room room){
-        return new Room(room.x,room.y,room.width,room.height,room.color);
+    public static Room getCopy(Room originalRoom) {
+        Room copy = new Room(
+                originalRoom.x,
+                originalRoom.y,
+                originalRoom.width,
+                originalRoom.height,
+                originalRoom.color
+        );
+
+        // Deep copy the openings list
+        if (originalRoom.openings != null) {
+            copy.openings = new ArrayList<>();
+            for (Opening opening : originalRoom.openings) {
+                copy.openings.add(Opening.getCopy(opening));
+            }
+        }
+
+        return copy;
     }
     public Color getColor(){
         return color;

@@ -170,6 +170,7 @@ public class Canvas<T> extends JComponent {
             if (SwingUtilities.isLeftMouseButton(e)) {
                 if (isFixtureOpening()) {
                     handleOpeningPlacement(point);
+//                    saveCurrentState();
                 } else if (isFurnitureSelected() && find(point)!=null) {
                     System.err.println(fixture);
                     handleFurnitureDrop(point, fixture);
@@ -358,11 +359,12 @@ public class Canvas<T> extends JComponent {
 
                         Opening.Side oppositeSide = getOppositeSide(sidePosition.side);
                         double oppositeSnappedPosition = calculateOppositeSnappedPosition(room, adjacentRoom, sidePosition, snappedPosition);
-
-                        // Check for overlapping openings in the adjacent room
-                        List<Opening> adjacentOpenings = adjacentRoom.openings.stream()
-                                .filter(o -> o.side == oppositeSide)
-                                .toList();
+                        List<Opening> adjacentOpenings = new ArrayList<>();
+                        if(adjacentRoom != null) {
+                            adjacentOpenings = adjacentRoom.openings.stream()
+                                    .filter(o -> o.side == oppositeSide)
+                                    .toList();
+                        }
 
                         boolean adjacentOverlapDetected = false;
                         for (Opening existingOpening : adjacentOpenings) {
@@ -414,6 +416,8 @@ public class Canvas<T> extends JComponent {
             }
         }
         private double calculateOppositeSnappedPosition(Room room, Room adjacentRoom, Room.SidePosition sidePosition, double snappedPosition) {
+            if(adjacentRoom == null)
+                    return 0.0;
             switch (sidePosition.side) {
                 case LEFT:
                 case RIGHT:
