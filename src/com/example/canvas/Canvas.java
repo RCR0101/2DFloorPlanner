@@ -257,7 +257,12 @@ public class Canvas<T> extends JComponent {
 
             String imagePath = getFurnitureImage(fixture);
             Furniture furniture = addFurniture(x, y, imagePath); // Get the furniture object
-
+            if(furniture==null) {
+                Canvas.this.fixture = null;
+                selectedFurniture = null;
+                dragStart = null;
+                repaint();
+            }
             // Set the parent room
             Room room = find(point);
             if (room != null) {
@@ -609,9 +614,24 @@ public class Canvas<T> extends JComponent {
 
     public Furniture addFurniture(double x, double y, String imagePath) {
         Furniture furniture = new Furniture(x, y, imagePath);
-        furnitureItems.add(furniture);
-        repaint();
-        return furniture; // Return the furniture object
+        if (FurnitureOverlapHandler.isOverlap(furniture, furnitureItems)) {
+            String str = Util.getAbsolutePath("assets/images/logo.png");
+            ImageIcon logo = new ImageIcon(str);
+            Image resizedImage = logo.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
+            ImageIcon resizedIcon = new ImageIcon(resizedImage);
+            JOptionPane.showMessageDialog(
+                    Canvas.this,
+                    "Furniture cannot overlap.",
+                    "Overlap Detected",
+                    JOptionPane.ERROR_MESSAGE,
+                    resizedIcon
+            );
+            return null;
+        } else {
+            furnitureItems.add(furniture);
+            repaint();
+            return furniture;
+        }
     }
 
     public void saveCurrentState() {
@@ -631,14 +651,10 @@ public class Canvas<T> extends JComponent {
     }
 
     private boolean isAdjacentToRoom(Room room, Room.SidePosition sidePosition, double doorPosition, boolean isDoor) {
-        if(!room.color.equals(new Color(255, 0, 0, 90)) && !room.color.equals(new Color(0, 255, 0, 90)) && isDoor)
-            return true;
         double checkX = room.x;
         double checkY = room.y;
-        double checkWidth = room.width;
-        double checkHeight = room.height;
 
-        // Adjust bounds to find adjacent room based on side
+        // Adjust the position based on the side and door position
         switch (sidePosition.side) {
             case LEFT:
                 checkX -= gridSize; // Check the left side
@@ -660,15 +676,26 @@ public class Canvas<T> extends JComponent {
                 return false;
         }
 
-        // Check if any room contains this adjacent position
+
         Point2D adjacentPoint = new Point2D.Double(checkX, checkY);
         for (Room otherRoom : rooms) {
             if (otherRoom != room && otherRoom.contains(adjacentPoint)) {
-                return true; // Found an adjacent room
+                return true;
             }
         }
 
-        return false; // No adjacent room found
+        if (isDoor) {
+            if (!isBedroomOrBathroom(room)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    private boolean isBedroomOrBathroom(Room room) {
+        Color bedroomColor = new Color(255, 0, 0, 90);   // Red color for bedroom
+        Color bathroomColor = new Color(0, 255, 0, 90);  // Green color for bathroom
+        return room.color.equals(bedroomColor) || room.color.equals(bathroomColor);
     }
 
     private void moveFurnitureInRoom(Room room, double deltaX, double deltaY) {
