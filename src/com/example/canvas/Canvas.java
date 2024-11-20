@@ -301,7 +301,17 @@ public class Canvas<T> extends JComponent {
                     Opening.Type openingType = fixture.toString().equals("door") ? Opening.Type.DOOR : Opening.Type.WINDOW;
                     double openingLength = 50.0;
                     double snappedPosition = snapToGrid((int) sidePosition.position);
-
+                    if (sidePosition.side == Opening.Side.TOP || sidePosition.side == Opening.Side.BOTTOM) {
+                        if (snappedPosition < 0) snappedPosition = 0;
+                        if (snappedPosition + openingLength > room.width) {
+                            openingLength = room.width - snappedPosition;
+                        }
+                    } else if (sidePosition.side == Opening.Side.LEFT || sidePosition.side == Opening.Side.RIGHT) {
+                        if (snappedPosition < 0) snappedPosition = 0;
+                        if (snappedPosition + openingLength > room.height) {
+                            openingLength = room.height - snappedPosition;
+                        }
+                    }
                     // Check for overlapping openings in the current room
                     List<Opening> existingOpenings = room.openings.stream()
                             .filter(o -> o.side == sidePosition.side)
