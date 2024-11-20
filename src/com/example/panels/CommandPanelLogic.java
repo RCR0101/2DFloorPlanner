@@ -61,7 +61,7 @@ public class CommandPanelLogic {
         insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
         insertPanel.add(createButton("Sink", FurnitureList.sink));
         insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
-        insertPanel.add(createButton("Snack Table", FurnitureList.snTable));
+        insertPanel.add(createButton("Snooker Table", FurnitureList.snTable));
         insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
         insertPanel.add(createButton("Cot", FurnitureList.cot));
         insertPanel.add(Box.createRigidArea(new Dimension(0, 20)));
