@@ -16,11 +16,13 @@ public class Furniture implements Serializable {
     public BufferedImage image;
     private int rotationAngle = 0;
     private String imagePath = "";
+    public Room parentRoom;
 
     public Furniture(double x, double y, String imagePath) {
         this.x = x;
         this.y = y;
         this.imagePath = imagePath;
+
         try {
             this.image = ImageIO.read(new File(imagePath));
             this.image = shrinkImage(this.image, 0.3);
@@ -28,6 +30,7 @@ public class Furniture implements Serializable {
             this.width = boundingBox.getWidth();
             this.height = boundingBox.getHeight();
             this.image = this.image.getSubimage(boundingBox.x, boundingBox.y, boundingBox.width, boundingBox.height);
+            this.parentRoom = null;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -104,6 +107,11 @@ public class Furniture implements Serializable {
     }
 
     public static Furniture getCopy(Furniture furniture) {
-        return new Furniture(furniture.x,furniture.y,furniture.imagePath);
+        Furniture copy = new Furniture(furniture.x,furniture.y,furniture.imagePath);
+        copy.width = furniture.width;
+        copy.height = furniture.height;
+        copy.rotationAngle = furniture.rotationAngle;
+        copy.parentRoom = furniture.parentRoom;
+        return copy;
     }
 }

@@ -30,6 +30,8 @@ public class Canvas<T> extends JComponent {
     private Furniture selectedFurniture = null;
     private Point2D dragStart = null;
     public ArrayList<CanvasState> allStates = new ArrayList<>(100);
+    private double previousRoomX = Double.NaN;
+    private double previousRoomY = Double.NaN;
 
     public Canvas(int gridSize) {
         this.gridSize = gridSize;
@@ -196,6 +198,8 @@ public class Canvas<T> extends JComponent {
 
         @Override
         public void mouseReleased(MouseEvent e) {
+            previousRoomX = Double.NaN;
+            previousRoomY = Double.NaN;
             Point2D point = new Point2D.Double();
             if (selectedFurniture != null) {
                 point.setLocation(selectedFurniture.x, selectedFurniture.y);
@@ -216,6 +220,8 @@ public class Canvas<T> extends JComponent {
                                 JOptionPane.ERROR_MESSAGE,
                                 resizedIcon
                         );
+                    } else {
+                        selectedFurniture.parentRoom = find(point);
                     }
                 } else {
                     selectedFurniture.x = originalFurniturePosition.x;
@@ -250,8 +256,19 @@ public class Canvas<T> extends JComponent {
             int y = snapToGrid((int) point.getY());
 
             String imagePath = getFurnitureImage(fixture);
+            Furniture furniture = addFurniture(x, y, imagePath); // Get the furniture object
+
+            // Set the parent room
+            Room room = find(point);
+            if (room != null) {
+                furniture.parentRoom = room;
+            } else {
+                // Handle the case where furniture is not inside any room
+                furniture.parentRoom = null;
+            }
             addFurniture(x, y, imagePath);
             saveCurrentState();
+            Canvas.this.fixture = null;
             selectedFurniture = null;
             dragStart = null;
             repaint();
@@ -406,8 +423,28 @@ public class Canvas<T> extends JComponent {
         }
         public void mouseMoved(MouseEvent e) {
             if(currentRoom != null && !customRoom) {
-                currentRoom.x = snapToGrid(e.getX());
-                currentRoom.y = snapToGrid(e.getY());
+                double newX = snapToGrid(e.getX());
+                double newY = snapToGrid(e.getY());
+
+                if (Double.isNaN(previousRoomX) || Double.isNaN(previousRoomY)) {
+                    // Movement just started, store the initial positions
+                    previousRoomX = currentRoom.x;
+                    previousRoomY = currentRoom.y;
+                }
+
+                double deltaX = newX - currentRoom.x;
+                double deltaY = newY - currentRoom.y;
+
+                // Update the room's position
+                currentRoom.x = newX;
+                currentRoom.y = newY;
+
+                moveFurnitureInRoom(currentRoom, deltaX, deltaY);
+                repaint();
+            } else {
+                // Reset previous positions when not moving a room
+                previousRoomX = Double.NaN;
+                previousRoomY = Double.NaN;
             }
             if(currentRoom != null && customRoom) {
                 double w = snapToGrid(e.getX()) - currentRoom.x;
@@ -571,10 +608,11 @@ public class Canvas<T> extends JComponent {
         g2d.drawLine((int) xStart, (int) yStart, (int) xEnd, (int) yEnd);
     }
 
-    public void addFurniture(double x, double y, String imagePath) {
+    public Furniture addFurniture(double x, double y, String imagePath) {
         Furniture furniture = new Furniture(x, y, imagePath);
         furnitureItems.add(furniture);
         repaint();
+        return furniture; // Return the furniture object
     }
 
     public void saveCurrentState() {
@@ -632,5 +670,14 @@ public class Canvas<T> extends JComponent {
         }
 
         return false; // No adjacent room found
+    }
+
+    private void moveFurnitureInRoom(Room room, double deltaX, double deltaY) {
+        for (Furniture furniture : furnitureItems) {
+            if (furniture.parentRoom == room) {
+                furniture.x += deltaX;
+                furniture.y += deltaY;
+            }
+        }
     }
 }
