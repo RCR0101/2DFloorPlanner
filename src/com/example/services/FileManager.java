@@ -1,13 +1,14 @@
 package com.example.services;
 
 import com.example.models.Room;
-
+import com.example.models.Furniture;
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.List;
 
 public class FileManager {
     private static String savePath = null;
@@ -15,11 +16,11 @@ public class FileManager {
     private static boolean isUnsavedChanges = true;
 
     // Retrieve the file from the given path or default savePath
-    public ArrayList<Room> loadFile(String filePath) throws IOException, ClassNotFoundException {
+    public Object[] loadFile(String filePath) throws IOException, ClassNotFoundException {
         File file = new File(filePath != null ? filePath : savePath);
 
         if (!file.exists() || file.length() == 0) {
-            return new ArrayList<>();
+            return new Object[]{new ArrayList<>(), new ArrayList<>()}; // Return empty lists
         }
 
         try (FileInputStream fileInputStream = new FileInputStream(file);
@@ -27,7 +28,10 @@ public class FileManager {
 
             @SuppressWarnings("unchecked")
             ArrayList<Room> roomList = (ArrayList<Room>) objectInputStream.readObject();
-            return roomList;
+            @SuppressWarnings("unchecked")
+            List<Furniture> furnitureList = (List<Furniture>) objectInputStream.readObject();
+
+            return new Object[]{roomList, furnitureList};
 
         } catch (StreamCorruptedException e) {
             throw new IOException("The file format is not a valid serialized object.", e);
@@ -35,7 +39,7 @@ public class FileManager {
     }
 
     // Save the file to the current savePath or prompt for a new path
-    public void saveFile(ArrayList<Room> roomList) throws IOException {
+    public void saveFile(ArrayList<Room> roomList, List<Furniture> furnitureList) throws IOException {
         if (isTempFile || !isSavePathSet()) {
             savePath = promptSavePath();
         }
@@ -44,6 +48,7 @@ public class FileManager {
             try (FileOutputStream fileOutputStream = new FileOutputStream(savePath);
                  ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream)) {
                 objectOutputStream.writeObject(roomList);
+                objectOutputStream.writeObject(furnitureList);
             }
 
             isUnsavedChanges = false;
@@ -111,10 +116,14 @@ public class FileManager {
     }
 
     // Check if the current file is saved
-    public boolean isFileSaved(ArrayList<Room> currentRooms) throws IOException, ClassNotFoundException {
+    public boolean isFileSaved(ArrayList<Room> currentRooms, List<Furniture> currentFurniture) throws IOException, ClassNotFoundException {
         if (isSavePathSet()) {
-            ArrayList<Room> savedRooms = loadFile(savePath);
-            boolean isSaved = savedRooms.equals(currentRooms);
+            Object[] savedData = loadFile(savePath);
+            @SuppressWarnings("unchecked")
+            ArrayList<Room> savedRooms = (ArrayList<Room>) savedData[0];
+            @SuppressWarnings("unchecked")
+            List<Furniture> savedFurniture = (List<Furniture>) savedData[1];
+            boolean isSaved = savedRooms.equals(currentRooms) && savedFurniture.equals(currentFurniture);
             isUnsavedChanges = !isSaved;
             return isSaved;
         }

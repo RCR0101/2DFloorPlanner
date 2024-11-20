@@ -3,11 +3,14 @@ package com.example.models;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Objects;
 
 public class Room implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 7894561230987654321L;
     public double x;
     public double y;
     public double width;

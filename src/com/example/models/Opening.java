@@ -1,8 +1,11 @@
 package com.example.models;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 public class Opening implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 7894561230987654321L;
     public enum Type { DOOR, WINDOW }
     public enum Side { TOP, BOTTOM, LEFT, RIGHT }
 

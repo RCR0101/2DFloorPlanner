@@ -46,32 +46,40 @@ public class Canvas<T> extends JComponent {
         }
     }
 
-    public void loadRoomsFromFile() {
+    public void loadFromFile() {
         FileManager fileManager = new FileManager();
-        boolean roomsLoaded = false;
         try {
             String filePath = fileManager.openFileChooser();
             if (filePath != null) {
-                rooms = fileManager.loadFile(filePath);
+                Object[] data = fileManager.loadFile(filePath);
+                @SuppressWarnings("unchecked")
+                ArrayList<Room> loadedRooms = (ArrayList<Room>) data[0];
+                @SuppressWarnings("unchecked")
+                List<Furniture> loadedFurniture = (List<Furniture>) data[1];
+
+                rooms = loadedRooms;
+                furnitureItems = loadedFurniture;
+
                 ArrayList<Room> clone = new ArrayList<>();
                 for (Room room : rooms) {
                     clone.add(Room.getCopy(room));
                 }
                 allRooms.add(clone);
-
-                roomsLoaded = true;
+                for(Furniture furniture : furnitureItems) {
+                    furniture.loadImage();
+                }
                 FileManager.resetUnsavedChanges();
                 repaint();
             } else {
-                System.out.println("No file selected. Initializing an empty rooms list.");
+                System.out.println("No file selected. Initializing empty lists.");
                 rooms = new ArrayList<>();
-                roomsLoaded = false;
+                furnitureItems = new ArrayList<>();
             }
         } catch (ClassNotFoundException | IOException e) {
-            System.err.println("Failed to load rooms from the file.");
+            System.err.println("Failed to load data from the file.");
             System.out.println("Error: " + e.getMessage());
-            rooms = new ArrayList<>(); // Fallback to an empty list in case of error
-            roomsLoaded = false;
+            rooms = new ArrayList<>(); // Fallback to empty lists
+            furnitureItems = new ArrayList<>();
         }
     }
 
@@ -469,10 +477,9 @@ public class Canvas<T> extends JComponent {
     }
 
     public void resetCanvas() {
-        FileManager fileManager = new FileManager(); // Create an instance of FileManager
+        FileManager fileManager = new FileManager();
 
-        // Check for unsaved changes before resetting
-        if (!rooms.isEmpty() && FileManager.hasUnsavedChanges()) {
+        if ((!rooms.isEmpty() || !furnitureItems.isEmpty()) && FileManager.hasUnsavedChanges()) {
             int option = JOptionPane.showConfirmDialog(
                     this,
                     "You have unsaved changes. Do you want to save them before creating a new canvas?",
@@ -482,26 +489,22 @@ public class Canvas<T> extends JComponent {
             );
 
             if (option == JOptionPane.CANCEL_OPTION || option == JOptionPane.CLOSED_OPTION) {
-                // User canceled the operation; do not reset
-                return;
+                return; // Do not reset
             } else if (option == JOptionPane.YES_OPTION) {
-                // User chose to save changes
                 try {
-                    fileManager.saveFile(rooms);
+                    fileManager.saveFile(rooms, furnitureItems);
                 } catch (IOException e) {
                     System.err.println("Error: " + e.getMessage());
                     System.err.println("Failed to save changes.");
                 }
             }
-            // If user chose NO, proceed to reset the canvas
+            // If NO, proceed to reset
         }
 
         rooms.clear();
         furnitureItems.clear();
         saveCurrentState();
-        int clickX = -1;
-        int clickY = -1;
-        FileManager.resetUnsavedChanges(); // Reset unsaved changes after clearing
+        FileManager.resetUnsavedChanges();
         repaint();
     }
 

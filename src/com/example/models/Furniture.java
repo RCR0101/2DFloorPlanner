@@ -9,14 +9,22 @@ import javax.imageio.ImageIO;
 import java.util.Objects;
 
 public class Furniture implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 7894561230987654321L;
     public double x;
     public double y;
     public double width;
     public double height;
-    public BufferedImage image;
+    public transient BufferedImage image;
     private int rotationAngle = 0;
     private String imagePath = "";
     public Room parentRoom;
+
+    @Serial
+    private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
+        ois.defaultReadObject();
+    }
+
 
     public Furniture(double x, double y, String imagePath) {
         this.x = x;
@@ -113,5 +121,34 @@ public class Furniture implements Serializable {
         copy.rotationAngle = furniture.rotationAngle;
         copy.parentRoom = furniture.parentRoom;
         return copy;
+    }
+
+    public void loadImage() {
+        if (imagePath != null) {
+            try {
+                BufferedImage loadedImage = ImageIO.read(new File(imagePath));
+                if (loadedImage != null) {
+                    this.image = shrinkImage(loadedImage, 0.3);
+                    Rectangle boundingBox = computeBoundingBox(this.image);
+
+                    // Update x and y to match the bounding box's new top-left
+                    this.x += boundingBox.getX();
+                    this.y += boundingBox.getY();
+
+                    this.width = boundingBox.getWidth();
+                    this.height = boundingBox.getHeight();
+
+                    this.image = this.image.getSubimage(
+                            boundingBox.x,
+                            boundingBox.y,
+                            boundingBox.width,
+                            boundingBox.height
+                    );
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                this.image = null;
+            }
+        }
     }
 }
