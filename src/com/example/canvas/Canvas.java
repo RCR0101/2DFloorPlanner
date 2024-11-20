@@ -266,7 +266,6 @@ public class Canvas<T> extends JComponent {
                 // Handle the case where furniture is not inside any room
                 furniture.parentRoom = null;
             }
-            addFurniture(x, y, imagePath);
             saveCurrentState();
             Canvas.this.fixture = null;
             selectedFurniture = null;
