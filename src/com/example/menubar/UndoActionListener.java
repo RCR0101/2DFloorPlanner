@@ -34,7 +34,6 @@ public class UndoActionListener extends AbstractAction {
             canvas.furnitureItems.addAll(previousState.getFurnitureItems());
 
             canvas.repaint();
-            System.out.println("Undo: moved back to changeLog " + canvas.changeLog);
         }
     }
 }

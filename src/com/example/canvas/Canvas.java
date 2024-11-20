@@ -46,32 +46,39 @@ public class Canvas<T> extends JComponent {
         }
     }
 
-    public void loadRoomsFromFile() {
+    public void loadFromFile() {
         FileManager fileManager = new FileManager();
-        boolean roomsLoaded = false;
         try {
             String filePath = fileManager.openFileChooser();
             if (filePath != null) {
-                rooms = fileManager.loadFile(filePath);
+                Object[] data = fileManager.loadFile(filePath);
+                @SuppressWarnings("unchecked")
+                ArrayList<Room> loadedRooms = (ArrayList<Room>) data[0];
+                @SuppressWarnings("unchecked")
+                List<Furniture> loadedFurniture = (List<Furniture>) data[1];
+
+                rooms = loadedRooms;
+                furnitureItems = loadedFurniture;
+
                 ArrayList<Room> clone = new ArrayList<>();
                 for (Room room : rooms) {
                     clone.add(Room.getCopy(room));
                 }
                 allRooms.add(clone);
-
-                roomsLoaded = true;
+                for(Furniture furniture : furnitureItems) {
+                    furniture.loadImage();
+                }
                 FileManager.resetUnsavedChanges();
                 repaint();
             } else {
-                System.out.println("No file selected. Initializing an empty rooms list.");
                 rooms = new ArrayList<>();
-                roomsLoaded = false;
+                furnitureItems = new ArrayList<>();
             }
         } catch (ClassNotFoundException | IOException e) {
-            System.err.println("Failed to load rooms from the file.");
+            System.err.println("Failed to load data from the file.");
             System.out.println("Error: " + e.getMessage());
-            rooms = new ArrayList<>(); // Fallback to an empty list in case of error
-            roomsLoaded = false;
+            rooms = new ArrayList<>(); // Fallback to empty lists
+            furnitureItems = new ArrayList<>();
         }
     }
 
@@ -147,7 +154,6 @@ public class Canvas<T> extends JComponent {
 
     public Room find(Point2D point){
         for(Room room : rooms){
-            System.out.println("I am trying");
             if(room.contains(point)) return room ;
         }
         return null;
@@ -164,6 +170,7 @@ public class Canvas<T> extends JComponent {
             if (SwingUtilities.isLeftMouseButton(e)) {
                 if (isFixtureOpening()) {
                     handleOpeningPlacement(point);
+//                    saveCurrentState();
                 } else if (isFurnitureSelected() && find(point)!=null) {
                     System.err.println(fixture);
                     handleFurnitureDrop(point, fixture);
@@ -257,7 +264,12 @@ public class Canvas<T> extends JComponent {
 
             String imagePath = getFurnitureImage(fixture);
             Furniture furniture = addFurniture(x, y, imagePath); // Get the furniture object
-
+            if(furniture==null) {
+                Canvas.this.fixture = null;
+                selectedFurniture = null;
+                dragStart = null;
+                repaint();
+            }
             // Set the parent room
             Room room = find(point);
             if (room != null) {
@@ -282,18 +294,27 @@ public class Canvas<T> extends JComponent {
         }
         private void handleOpeningPlacement(Point2D point) {
             Room room = find(point);
-            List<Opening> existingOpenings = new ArrayList<>();
             if (room != null) {
                 Room.SidePosition sidePosition = room.getSideAtPoint(point);
                 if (sidePosition != null) {
                     Opening.Type openingType = fixture.toString().equals("door") ? Opening.Type.DOOR : Opening.Type.WINDOW;
                     double openingLength = 50.0;
                     double snappedPosition = snapToGrid((int) sidePosition.position);
-                    if(room.openings != null) {
-                        existingOpenings = room.openings.stream()
-                                .filter(o -> o.side == sidePosition.side)
-                                .toList();
+                    if (sidePosition.side == Opening.Side.TOP || sidePosition.side == Opening.Side.BOTTOM) {
+                        if (snappedPosition < 0) snappedPosition = 0;
+                        if (snappedPosition + openingLength > room.width) {
+                            openingLength = room.width - snappedPosition;
+                        }
+                    } else if (sidePosition.side == Opening.Side.LEFT || sidePosition.side == Opening.Side.RIGHT) {
+                        if (snappedPosition < 0) snappedPosition = 0;
+                        if (snappedPosition + openingLength > room.height) {
+                            openingLength = room.height - snappedPosition;
+                        }
                     }
+                    // Check for overlapping openings in the current room
+                    List<Opening> existingOpenings = room.openings.stream()
+                            .filter(o -> o.side == sidePosition.side)
+                            .toList();
 
                     boolean overlapDetected = false;
                     for (Opening existingOpening : existingOpenings) {
@@ -304,7 +325,6 @@ public class Canvas<T> extends JComponent {
                         double newEnd = snappedPosition + openingLength;
 
                         if (newStart < existingEnd && newEnd > existingStart) {
-                            // Overlap detected
                             overlapDetected = true;
                             break;
                         }
@@ -321,7 +341,9 @@ public class Canvas<T> extends JComponent {
                     }
 
                     if (openingType == Opening.Type.DOOR) {
-                        if (!isAdjacentToRoom(room, sidePosition, snappedPosition, true)) {
+                        // Find the adjacent room
+                        Room adjacentRoom = findAdjacentRoom(room, sidePosition, snappedPosition);
+                        if (adjacentRoom == null && isBedroomOrBathroom(room)) {
                             JOptionPane.showMessageDialog(
                                     null,
                                     "Invalid door placement! Doors must lead to another room.",
@@ -330,6 +352,50 @@ public class Canvas<T> extends JComponent {
                             );
                             return; // Cancel door placement
                         }
+
+                        // Add the door to the current room
+                        Opening opening = new Opening(openingType, sidePosition.side, snappedPosition, openingLength);
+                        room.addOpening(opening);
+
+                        Opening.Side oppositeSide = getOppositeSide(sidePosition.side);
+                        double oppositeSnappedPosition = calculateOppositeSnappedPosition(room, adjacentRoom, sidePosition, snappedPosition);
+                        List<Opening> adjacentOpenings = new ArrayList<>();
+                        if(adjacentRoom != null) {
+                            adjacentOpenings = adjacentRoom.openings.stream()
+                                    .filter(o -> o.side == oppositeSide)
+                                    .toList();
+                        }
+
+                        boolean adjacentOverlapDetected = false;
+                        for (Opening existingOpening : adjacentOpenings) {
+                            double existingStart = existingOpening.position;
+                            double existingEnd = existingOpening.position + existingOpening.length;
+
+                            double newStart = oppositeSnappedPosition;
+                            double newEnd = oppositeSnappedPosition + openingLength;
+
+                            if (newStart < existingEnd && newEnd > existingStart) {
+                                adjacentOverlapDetected = true;
+                                break;
+                            }
+                        }
+
+                        if (adjacentOverlapDetected) {
+                            JOptionPane.showMessageDialog(
+                                    null,
+                                    "Overlap detected in adjacent room! Cannot place door.",
+                                    "Overlap",
+                                    JOptionPane.ERROR_MESSAGE
+                            );
+                            // Optionally remove the door from the current room
+                            room.openings.remove(opening);
+                            return;
+                        }
+
+                        // Add the door to the adjacent room
+                        Opening oppositeOpening = new Opening(openingType, oppositeSide, oppositeSnappedPosition, openingLength);
+                        adjacentRoom.addOpening(oppositeOpening);
+
                     } else {
                         if (isAdjacentToRoom(room, sidePosition, snappedPosition, false)) {
                             JOptionPane.showMessageDialog(
@@ -340,16 +406,73 @@ public class Canvas<T> extends JComponent {
                             );
                             return;
                         }
+                        Opening opening = new Opening(openingType, sidePosition.side, snappedPosition, openingLength);
+                        room.addOpening(opening);
                     }
-                    Opening opening = new Opening(openingType, sidePosition.side, snappedPosition, openingLength);
-                    room.addOpening(opening);
+
                     saveCurrentState();
-                    // Repaint to reflect changes
                     repaint();
                 }
             }
         }
+        private double calculateOppositeSnappedPosition(Room room, Room adjacentRoom, Room.SidePosition sidePosition, double snappedPosition) {
+            if(adjacentRoom == null)
+                    return 0.0;
+            switch (sidePosition.side) {
+                case LEFT:
+                case RIGHT:
+                    // For vertical sides, adjust Y position
+                    return snappedPosition + (room.y - adjacentRoom.y);
+                case TOP:
+                case BOTTOM:
+                    // For horizontal sides, adjust X position
+                    return snappedPosition + (room.x - adjacentRoom.x);
+                default:
+                    throw new IllegalArgumentException("Invalid side: " + sidePosition.side);
+            }
+        }
+        private Opening.Side getOppositeSide(Opening.Side side) {
+            switch (side) {
+                case LEFT:
+                    return Opening.Side.RIGHT;
+                case RIGHT:
+                    return Opening.Side.LEFT;
+                case TOP:
+                    return Opening.Side.BOTTOM;
+                case BOTTOM:
+                    return Opening.Side.TOP;
+                default:
+                    throw new IllegalArgumentException("Invalid side: " + side);
+            }
+        }
+        private Room findAdjacentRoom(Room room, Room.SidePosition sidePosition, double snappedPosition) {
+            double checkX = 0;
+            double checkY = 0;
 
+            switch (sidePosition.side) {
+                case LEFT:
+                    checkX = room.x - 1; // Just outside the left side
+                    checkY = room.y + snappedPosition;
+                    break;
+                case RIGHT:
+                    checkX = room.x + room.width + 1; // Just outside the right side
+                    checkY = room.y + snappedPosition;
+                    break;
+                case TOP:
+                    checkX = room.x + snappedPosition;
+                    checkY = room.y - 1; // Just above the top side
+                    break;
+                case BOTTOM:
+                    checkX = room.x + snappedPosition;
+                    checkY = room.y + room.height + 1; // Just below the bottom side
+                    break;
+                default:
+                    return null;
+            }
+
+            Point2D adjacentPoint = new Point2D.Double(checkX, checkY);
+            return find(adjacentPoint);
+        }
         private void handleDoubleClick(Point2D point) {
             currentRoom = find(point);
             if (currentRoom == null) {
@@ -358,7 +481,6 @@ public class Canvas<T> extends JComponent {
         }
 
         private void handleCustomRoomClick() {
-            System.out.println("You clicked on a custom room");
             SaveChange.saveChanges(Canvas.this);
             repaint();
         }
@@ -379,7 +501,6 @@ public class Canvas<T> extends JComponent {
         }
 
         private void handleRoomClick() {
-            System.out.println("You clicked on a non-custom room");
             SaveChange.saveChanges(Canvas.this);
             repaint();
         }
@@ -464,10 +585,9 @@ public class Canvas<T> extends JComponent {
     }
 
     public void resetCanvas() {
-        FileManager fileManager = new FileManager(); // Create an instance of FileManager
+        FileManager fileManager = new FileManager();
 
-        // Check for unsaved changes before resetting
-        if (!rooms.isEmpty() && FileManager.hasUnsavedChanges()) {
+        if ((!rooms.isEmpty() || !furnitureItems.isEmpty()) && FileManager.hasUnsavedChanges()) {
             int option = JOptionPane.showConfirmDialog(
                     this,
                     "You have unsaved changes. Do you want to save them before creating a new canvas?",
@@ -477,26 +597,22 @@ public class Canvas<T> extends JComponent {
             );
 
             if (option == JOptionPane.CANCEL_OPTION || option == JOptionPane.CLOSED_OPTION) {
-                // User canceled the operation; do not reset
-                return;
+                return; // Do not reset
             } else if (option == JOptionPane.YES_OPTION) {
-                // User chose to save changes
                 try {
-                    fileManager.saveFile(rooms);
+                    fileManager.saveFile(rooms, furnitureItems);
                 } catch (IOException e) {
                     System.err.println("Error: " + e.getMessage());
                     System.err.println("Failed to save changes.");
                 }
             }
-            // If user chose NO, proceed to reset the canvas
+            // If NO, proceed to reset
         }
 
         rooms.clear();
         furnitureItems.clear();
         saveCurrentState();
-        int clickX = -1;
-        int clickY = -1;
-        FileManager.resetUnsavedChanges(); // Reset unsaved changes after clearing
+        FileManager.resetUnsavedChanges();
         repaint();
     }
 
@@ -569,6 +685,7 @@ public class Canvas<T> extends JComponent {
 
     private void drawLineSegment(Graphics2D g2d, Room room, Opening.Side side, double startPos, double endPos, String style) {
         double xStart = 0, yStart = 0, xEnd = 0, yEnd = 0;
+        g2d.setColor(Color.black);
         switch (side) {
             case TOP:
                 xStart = room.x + startPos;
@@ -609,9 +726,24 @@ public class Canvas<T> extends JComponent {
 
     public Furniture addFurniture(double x, double y, String imagePath) {
         Furniture furniture = new Furniture(x, y, imagePath);
-        furnitureItems.add(furniture);
-        repaint();
-        return furniture; // Return the furniture object
+        if (FurnitureOverlapHandler.isOverlap(furniture, furnitureItems)) {
+            String str = Util.getAbsolutePath("assets/images/logo.png");
+            ImageIcon logo = new ImageIcon(str);
+            Image resizedImage = logo.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
+            ImageIcon resizedIcon = new ImageIcon(resizedImage);
+            JOptionPane.showMessageDialog(
+                    Canvas.this,
+                    "Furniture cannot overlap.",
+                    "Overlap Detected",
+                    JOptionPane.ERROR_MESSAGE,
+                    resizedIcon
+            );
+            return null;
+        } else {
+            furnitureItems.add(furniture);
+            repaint();
+            return furniture;
+        }
     }
 
     public void saveCurrentState() {
@@ -631,14 +763,10 @@ public class Canvas<T> extends JComponent {
     }
 
     private boolean isAdjacentToRoom(Room room, Room.SidePosition sidePosition, double doorPosition, boolean isDoor) {
-        if(!room.color.equals(new Color(255, 0, 0, 90)) && !room.color.equals(new Color(0, 255, 0, 90)) && isDoor)
-            return true;
         double checkX = room.x;
         double checkY = room.y;
-        double checkWidth = room.width;
-        double checkHeight = room.height;
 
-        // Adjust bounds to find adjacent room based on side
+        // Adjust the position based on the side and door position
         switch (sidePosition.side) {
             case LEFT:
                 checkX -= gridSize; // Check the left side
@@ -660,15 +788,26 @@ public class Canvas<T> extends JComponent {
                 return false;
         }
 
-        // Check if any room contains this adjacent position
+
         Point2D adjacentPoint = new Point2D.Double(checkX, checkY);
         for (Room otherRoom : rooms) {
             if (otherRoom != room && otherRoom.contains(adjacentPoint)) {
-                return true; // Found an adjacent room
+                return true;
             }
         }
 
-        return false; // No adjacent room found
+        if (isDoor) {
+            if (!isBedroomOrBathroom(room)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    private boolean isBedroomOrBathroom(Room room) {
+        Color bedroomColor = new Color(255, 0, 0, 90);   // Red color for bedroom
+        Color bathroomColor = new Color(0, 255, 0, 90);  // Green color for bathroom
+        return room.color.equals(bedroomColor) || room.color.equals(bathroomColor);
     }
 
     private void moveFurnitureInRoom(Room room, double deltaX, double deltaY) {

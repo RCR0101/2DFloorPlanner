@@ -31,7 +31,7 @@ public class CustomMenuBarLogic {
     public void setupSaveAction(JMenuItem saveItem) {
         saveItem.addActionListener(_ -> {
             try {
-                fileManager.saveFile(OuterFrame.canvas.rooms);
+                fileManager.saveFile(OuterFrame.canvas.rooms, OuterFrame.canvas.furnitureItems);
                 System.out.println("File saved successfully.");
             } catch (IOException eIO) {
                 System.err.println("There was an IOException while saving the file.");
@@ -42,7 +42,7 @@ public class CustomMenuBarLogic {
     public void setupOpenAction(JMenuItem openItem) {
         openItem.addActionListener(_ -> {
             try {
-                OuterFrame.canvas.loadRoomsFromFile();
+                OuterFrame.canvas.loadFromFile();
                 System.out.println("File opened successfully.");
             } catch (Exception ex) {
                 System.err.println("Failed to open file: " + ex.getMessage());

@@ -29,9 +29,8 @@ public class ClosingWindowListener extends WindowAdapter {
                 resizedIcon);
 
         if (response == JOptionPane.YES_OPTION) {
-            System.out.println("Saving changes...");
             try {
-                outerFrame.getFileManager().saveFile(OuterFrame.canvas.rooms);
+                outerFrame.getFileManager().saveFile(OuterFrame.canvas.rooms,OuterFrame.canvas.furnitureItems);
                 System.exit(0);
             } catch (IOException e1) {
                 System.err.println("There was an IOException: " + e1);

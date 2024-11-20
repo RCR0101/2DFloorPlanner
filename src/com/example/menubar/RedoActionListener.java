@@ -31,7 +31,6 @@ public class RedoActionListener extends AbstractAction {
             canvas.furnitureItems.addAll(newState.getFurnitureItems());
 
             canvas.repaint();
-            System.out.println("Redo: moved forward to changeLog " + canvas.changeLog);
         }
     }
 }
