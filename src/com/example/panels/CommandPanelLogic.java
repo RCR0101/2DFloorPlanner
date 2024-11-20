@@ -21,7 +21,6 @@ public class CommandPanelLogic {
         canvas.customRoom = true;
         canvas.currentRoom = null;
         cardLayout.show(cardPanel, "Insert");
-        System.out.println("Custom room mode activated.");
     }
 
     public void createInsertPanel(JPanel cardPanel) {

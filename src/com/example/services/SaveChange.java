@@ -16,7 +16,6 @@ public class SaveChange {
             if(canvas.currentRoom == null) return false;
             for(Object otherRoom : canvas.rooms){
                 if(canvas.currentRoom.intersects((Room)otherRoom) && canvas.currentRoom != otherRoom){
-                    System.out.println("Returning true");
                     return true;
                 }
             }
@@ -31,7 +30,6 @@ public class SaveChange {
                 }
                 if (canvas.changeLog < canvas.allRooms.size()) {
                     canvas.allRooms.set(canvas.changeLog, clone);
-                    System.out.println();
                 } else {
                     canvas.allRooms.add(clone);
                 }

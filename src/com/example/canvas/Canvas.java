@@ -71,7 +71,6 @@ public class Canvas<T> extends JComponent {
                 FileManager.resetUnsavedChanges();
                 repaint();
             } else {
-                System.out.println("No file selected. Initializing empty lists.");
                 rooms = new ArrayList<>();
                 furnitureItems = new ArrayList<>();
             }
@@ -155,7 +154,6 @@ public class Canvas<T> extends JComponent {
 
     public Room find(Point2D point){
         for(Room room : rooms){
-            System.out.println("I am trying");
             if(room.contains(point)) return room ;
         }
         return null;
@@ -479,7 +477,6 @@ public class Canvas<T> extends JComponent {
         }
 
         private void handleCustomRoomClick() {
-            System.out.println("You clicked on a custom room");
             SaveChange.saveChanges(Canvas.this);
             repaint();
         }
@@ -500,7 +497,6 @@ public class Canvas<T> extends JComponent {
         }
 
         private void handleRoomClick() {
-            System.out.println("You clicked on a non-custom room");
             SaveChange.saveChanges(Canvas.this);
             repaint();
         }
