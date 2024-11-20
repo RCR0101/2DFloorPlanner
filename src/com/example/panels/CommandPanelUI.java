@@ -51,11 +51,8 @@ public class CommandPanelUI {
 
         // Setup button actions (logic)
         insertButton.addActionListener(_ -> commandPanelLogic.handleInsertButtonAction(cardPanel, cardLayout));
-        alignmentButton.addActionListener(_ -> cardLayout.show(cardPanel, "Relative Alignment"));
 
         tabBar.add(insertButton);
-        tabBar.add(Box.createRigidArea(new Dimension(20, 0)));
-        tabBar.add(alignmentButton);
 
         return tabBar;
     }

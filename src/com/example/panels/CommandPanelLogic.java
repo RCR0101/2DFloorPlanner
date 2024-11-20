@@ -95,8 +95,6 @@ public class CommandPanelLogic {
         notice.setForeground(new Color(200, 200, 200));
         notice.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
         alignmentPanel.add(notice);
-
-        cardPanel.add(alignmentPanel, "Relative Alignment");
     }
 
     public JLabel createTitle(String title) {
