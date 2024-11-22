@@ -213,9 +213,11 @@ public class Canvas<T> extends JComponent {
                 if(find(point)!=null) {
                     selectedFurniture.x = snapToGrid((int) selectedFurniture.x);
                     selectedFurniture.y = snapToGrid((int) selectedFurniture.y);
+                    selectedFurniture.updateParentRoom(rooms);
                     if (FurnitureOverlapHandler.isOverlap(selectedFurniture, furnitureItems)) {
                         selectedFurniture.x = originalFurniturePosition.x;
                         selectedFurniture.y = originalFurniturePosition.y;
+                        selectedFurniture.updateParentRoom(rooms);
                         String str = Util.getAbsolutePath("assets/images/logo.png");
                         ImageIcon logo = new ImageIcon(str);
                         Image resizedImage = logo.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
@@ -233,6 +235,7 @@ public class Canvas<T> extends JComponent {
                 } else {
                     selectedFurniture.x = originalFurniturePosition.x;
                     selectedFurniture.y = originalFurniturePosition.y;
+                    selectedFurniture.updateParentRoom(rooms);
                     String str = Util.getAbsolutePath("assets/images/logo.png");
                     ImageIcon logo = new ImageIcon(str);
                     Image resizedImage = logo.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
@@ -534,7 +537,7 @@ public class Canvas<T> extends JComponent {
                 // Update furniture position
                 selectedFurniture.x += dx;
                 selectedFurniture.y += dy;
-
+                selectedFurniture.updateParentRoom(rooms);
                 // Update drag start point
                 dragStart = e.getPoint();
 
@@ -600,7 +603,10 @@ public class Canvas<T> extends JComponent {
                 return; // Do not reset
             } else if (option == JOptionPane.YES_OPTION) {
                 try {
+                    if(validateBeforeSave())
                     fileManager.saveFile(rooms, furnitureItems);
+                    else
+                        showErrorDialog("There are errors in placement!", "Cannot Save");
                 } catch (IOException e) {
                     System.err.println("Error: " + e.getMessage());
                     System.err.println("Failed to save changes.");
@@ -817,5 +823,42 @@ public class Canvas<T> extends JComponent {
                 furniture.y += deltaY;
             }
         }
+    }
+
+    private boolean validateBeforeSave() {
+        // Check for overlapping furniture items
+        for (int i = 0; i < furnitureItems.size(); i++) {
+            Furniture furniture1 = furnitureItems.get(i);
+                if (FurnitureOverlapHandler.isOverlap(furniture1, furnitureItems)) {
+                    showErrorDialog("Cannot save because there are overlapping furniture items.", "Overlap Detected");
+                    return false;
+                }
+        }
+
+        // Check for furniture not placed inside any room
+        for (Furniture furniture : furnitureItems) {
+            if (furniture.parentRoom == null) {
+                showErrorDialog("Cannot save because some furniture items are not placed inside any room.", "Invalid Placement");
+                return false;
+            }
+        }
+
+        // Add other validation checks as needed
+
+        return true; // All validations passed
+    }
+
+    private void showErrorDialog(String message, String title) {
+        String str = Util.getAbsolutePath("assets/images/logo.png");
+        ImageIcon logo = new ImageIcon(str);
+        Image resizedImage = logo.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
+        ImageIcon resizedIcon = new ImageIcon(resizedImage);
+        JOptionPane.showMessageDialog(
+                Canvas.this,
+                message,
+                title,
+                JOptionPane.ERROR_MESSAGE,
+                resizedIcon
+        );
     }
 }
