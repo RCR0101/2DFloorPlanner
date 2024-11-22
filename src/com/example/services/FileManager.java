@@ -3,6 +3,7 @@ package com.example.services;
 import com.example.models.Room;
 import com.example.models.Furniture;
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.filechooser.FileSystemView;
 import java.io.*;
 import java.nio.file.Files;
@@ -67,6 +68,8 @@ public class FileManager {
     // Prompt the user to choose a new save location
     public String promptSavePath() {
         JFileChooser fileChooser = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("SPAR Files", "spar");
+        fileChooser.setFileFilter(filter);
         fileChooser.setDialogTitle("Save File");
         fileChooser.setApproveButtonText("Save");
 
@@ -74,8 +77,8 @@ public class FileManager {
         if (response == JFileChooser.APPROVE_OPTION) {
             File fileToSave = fileChooser.getSelectedFile();
             String chosenPath = fileToSave.getAbsolutePath();
-            if (!chosenPath.endsWith(".txt")) {
-                chosenPath += ".txt";
+            if (!chosenPath.endsWith(".spar")) {
+                chosenPath += ".spar";
             }
 
             if (isTempFile) {
@@ -104,7 +107,9 @@ public class FileManager {
 
     // Open file chooser to select a file to load
     public String openFileChooser() {
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("SPAR Files", "spar");
         JFileChooser fileChooser = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
+        fileChooser.setFileFilter(filter);
         fileChooser.setDialogTitle("Open File");
 
         int response = fileChooser.showOpenDialog(null);

@@ -6,6 +6,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import javax.imageio.ImageIO;
+import java.util.ArrayList;
 import java.util.Objects;
 
 public class Furniture implements Serializable {
@@ -150,5 +151,46 @@ public class Furniture implements Serializable {
                 this.image = null;
             }
         }
+    }
+
+    public void updateParentRoom(ArrayList<Room> rooms) {
+        Point2D furnitureCenter = new Point2D.Double(
+                this.x + this.width / 2,
+                this.y + this.height / 2
+        );
+
+        // Check all corners of the furniture
+        Point2D[] corners = {
+                new Point2D.Double(this.x, this.y),                           // Top-left
+                new Point2D.Double(this.x + this.width, this.y),             // Top-right
+                new Point2D.Double(this.x, this.y + this.height),            // Bottom-left
+                new Point2D.Double(this.x + this.width, this.y + this.height) // Bottom-right
+        };
+
+        // First try to find a room that contains all corners
+        for (Room room : rooms) {
+            boolean allCornersInRoom = true;
+            for (Point2D corner : corners) {
+                if (!room.contains(corner)) {
+                    allCornersInRoom = false;
+                    break;
+                }
+            }
+            if (allCornersInRoom) {
+                this.parentRoom = room;
+                return;
+            }
+        }
+
+        // If no room contains all corners, check if the center is in a room
+        for (Room room : rooms) {
+            if (room.contains(furnitureCenter)) {
+                this.parentRoom = room;
+                return;
+            }
+        }
+
+        // If no valid room is found, set parentRoom to null
+        this.parentRoom = null;
     }
 }
